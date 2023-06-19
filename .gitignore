@@ -1,5 +1,12 @@
 # raw data
 /data/raw/
 
+# R
+.Rproj.user
+
+# Word
+~$*
+
 # Mac OS-specific storage files
 .DS_Store
+.Rproj.user
