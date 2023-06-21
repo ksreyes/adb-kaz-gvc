@@ -1,5 +1,7 @@
-# raw data
-/data/raw/
+literature
+notes
+figures/figure-drafts/
+data/raw/
 
 # R
 .Rproj.user
