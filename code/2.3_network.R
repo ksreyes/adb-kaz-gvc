@@ -192,7 +192,7 @@ for (i in 1:10) {
       legend.box.margin = margin(-20, 0, 0, 0)
     )
   
-  ggsave(paste0("figures/network_drafts/", seed, "_network.pdf"), plot, 
+  ggsave(paste0("figures/figure-drafts/network_", seed, ".pdf"), plot, 
          device = cairo_pdf, width = 16, height = 12, unit = "cm")
 }
 
