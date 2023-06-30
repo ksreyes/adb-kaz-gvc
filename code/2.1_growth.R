@@ -2,7 +2,6 @@
 
 rm(list = ls())
 library(tidyverse)
-library(ggplot2)
 
 df <- read_csv("data/final/2.1_growth.csv") %>%
   mutate(
@@ -79,10 +78,21 @@ plot <- ggplot(df) +
     )
   )
 
-ggsave("figures/2.1_growth.pdf", plot, device = cairo_pdf,
-  width = 16, height = 10, unit = "cm")
+ggsave(
+  "figures/2.1_growth.pdf",
+  plot,
+  device = cairo_pdf,
+  width = 16,
+  height = 10,
+  unit = "cm"
+)
 
-#ggsave("figures/2.1_growth.png", plot, type = "cairo",
-#       dpi = 300, width = 16, height = 8, unit = "cm")
+# ggsave(
+#   "figures/2.1_growth.png",
+#   plot,
+#   width = 16,
+#   height = 8,
+#   unit = "cm"
+# )
 
 ######### END #########

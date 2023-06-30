@@ -3,38 +3,9 @@
 rm(list = ls())
 library(readxl)
 library(tidyverse)
-library(ggplot2)
 
 years <- 2002:2021
 country <- 398
-
-# EDA ----
-
-products <-
-  read_excel("data/interim/sectors.xlsx", sheet = "hs02_mrio") %>%
-  select(hs02:section_name)
-
-baci19 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2019_V202301.csv")
-baci02 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2002_V202301.csv")
-
-df19 <- baci19 %>%
-  filter(i == country) %>%
-  left_join(products, by = c("k" = "hs02")) %>% 
-  group_by(t, i, k, hs02_desc, section, section_name) %>% 
-  summarize(v = sum(v)) %>% 
-  ungroup() %>% 
-  mutate(share = v / sum(v))
-
-df02 <- baci02 %>%
-  filter(i == country) %>%
-  left_join(products, by = c("k" = "hs02")) %>% 
-  group_by(t, i, k, hs02_desc, section, section_name) %>% 
-  summarize(v = sum(v)) %>% 
-  ungroup() %>% 
-  mutate(share = v / sum(v))
-
-write_csv(df19, "data/interim/kaz_exports_2019.csv")
-write_csv(df02, "data/interim/kaz_exports_2002.csv")
 
 # Choose products to highlight
 
@@ -169,14 +140,14 @@ dfout <- df %>%
     `Metals: others`,
     Others
   ) %>% 
+  replace_na(list(`Minerals: natural gas` = 0)) %>% 
   rowwise(t) %>%
   mutate(Total = sum(c_across(Food:Others))) %>%
   arrange(desc(t))
 
-write_csv("data/final/2.4_products.csv")
+write_csv(dfout, "data/final/2.4_products.csv")
 
 # PLOT ----
-
 
 pos <- groups %>%
   left_join(subset(df, t == 2021), by = c("name" = "group")) %>%
@@ -265,10 +236,51 @@ plot <- ggplot(df, aes(x = v, y = t, fill = group)) +
     panel.grid.major = element_blank()
   )
 
-ggsave("figures/2.4_products.pdf", plot, device = cairo_pdf, 
-       width = 16, height = 12, unit = "cm")
+ggsave(
+  "figures/2.4_products.pdf",
+  plot,
+  device = cairo_pdf,
+  width = 16,
+  height = 12,
+  unit = "cm"
+)
 
-#ggsave("figures/2.4_products.png", plot, type = "cairo", 
-#       dpi = 300, width = 16, height = 12, unit = "cm")
+# ggsave(
+#   "figures/2.4_products.png",
+#   plot,
+#   width = 16,
+#   height = 12,
+#   unit = "cm"
+# )
+
+# APPENDIX ----
+
+# Check which exports are largest
+
+products <-
+  read_excel("data/interim/sectors.xlsx", sheet = "hs02_mrio") %>%
+  select(hs02:section_name)
+
+baci19 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2019_V202301.csv")
+baci02 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2002_V202301.csv")
+
+df19 <- baci19 %>%
+  filter(i == country) %>%
+  left_join(products, by = c("k" = "hs02")) %>% 
+  group_by(t, i, k, hs02_desc, section, section_name) %>% 
+  summarize(v = sum(v)) %>% 
+  ungroup() %>% 
+  mutate(share = v / sum(v))
+
+df02 <- baci02 %>%
+  filter(i == country) %>%
+  left_join(products, by = c("k" = "hs02")) %>% 
+  group_by(t, i, k, hs02_desc, section, section_name) %>% 
+  summarize(v = sum(v)) %>% 
+  ungroup() %>% 
+  mutate(share = v / sum(v))
+
+write_csv(df19, "data/interim/kaz_exports_2019.csv")
+write_csv(df02, "data/interim/kaz_exports_2002.csv")
 
 ######### END #########

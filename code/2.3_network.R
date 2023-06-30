@@ -8,8 +8,8 @@ library(ggraph)
 
 countries <- read_excel("data/interim/countries.xlsx") %>%
   select(iso_num, code, name, region)
-countries$code[which(countries$name == "Other Asia, not elsewhere specified")] <-
-  "TAP"
+countries <- countries %>%
+  mutate(code = replace(code, name == "Other Asia, not elsewhere specified", "TAP"))
 
 # DATA ----
 
@@ -124,12 +124,24 @@ plot <- ggraph(network, layout = "dh") +
     legend.box.margin = margin(-20, 0, 0, 0)
   )
 
-ggsave("figures/2.3_network.pdf", plot, device = cairo_pdf, 
-      width = 16, height = 12, unit = "cm")
+ggsave(
+  "figures/2.3_network.pdf",
+  plot,
+  device = cairo_pdf,
+  width = 16,
+  height = 12,
+  unit = "cm"
+)
 
-#ggsave("figures/2.3_network.png", plot, 
-#       dpi = 300, width = 16, height = 12, unit = "cm")
+# ggsave(
+#   "figures/2.3_network.png",
+#   plot,
+#   width = 16,
+#   height = 12,
+#   unit = "cm"
+# )
 
+# APPENDIX ----
 
 # Look for a nice graph
 
@@ -192,8 +204,14 @@ for (i in 1:10) {
       legend.box.margin = margin(-20, 0, 0, 0)
     )
   
-  ggsave(paste0("figures/figure-drafts/network_", seed, ".pdf"), plot, 
-         device = cairo_pdf, width = 16, height = 12, unit = "cm")
+  ggsave(
+    paste0("figures/figure-drafts/network_", seed, ".pdf"),
+    plot,
+    device = cairo_pdf,
+    width = 16,
+    height = 12,
+    unit = "cm"
+  )
 }
 
 ######### END #########
