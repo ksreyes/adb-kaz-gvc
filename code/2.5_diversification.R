@@ -12,11 +12,13 @@ party <-
     "Russian Federation"
   )
 
-countries <- read_excel("data/interim/countries.xlsx") %>%
+countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+  read_excel() %>%
   select(iso_num, code, name, region) %>% 
   filter(name %in% party)
 
-products <- read_csv("data/raw/BACI_HS02_V202301/product_codes_HS02_V202301.csv") %>%
+products <- here("data", "raw", "BACI_HS02_V202301", "product_codes_HS02_V202301.csv") %>% 
+  read_csv() %>%
   mutate(hs02_2 = substr(code, 1, 2),
          hs02_4 = substr(code, 1, 4)) %>% 
   select(hs02_2, hs02_4, hs02 = code, hs02_name = description) 
@@ -67,7 +69,7 @@ for (t in 1:length(years)) {
 dfout <- df %>% 
   pivot_wider(names_from = name, values_from = hhi)
 
-write_csv(dfout, "data/final/2.5_diversification.csv")
+write_csv(dfout, here("data", "final", "2.5_diversification.csv"))
 
 # PLOT ----
 
@@ -116,20 +118,12 @@ plot <- ggplot(df, aes(x = name, y = hhi, fill = t)) +
   )
 
 ggsave(
-  "figures/2.5_diversification.pdf",
+  here("figures", "2.5_diversification.pdf"),
   plot,
   device = cairo_pdf,
   width = 16,
   height = 10,
   unit = "cm"
 )
-
-#ggsave(
-#  "figures/2.5_diversification.png",
-#  plot,
-#  width = 16,
-#  height = 10,
-#  unit = "cm"
-#)
 
 ######### END #########

@@ -1,6 +1,7 @@
 # OPENNESS & DEVELOPMENT
 
 rm(list = ls())
+library(here)
 library(readxl)
 library(tidyverse)
 library(ggrepel)
@@ -18,37 +19,34 @@ highlight <-
 
 # DATA ----
 
-wb_groups <- read_excel("data/interim/countries.xlsx",
-                        sheet = "World Bank") %>%
-  filter(is.na(iso_num) & !(name %in% c("Channel Islands",
-                                        "Monaco",
-                                        "Kosovo"))) %>%
+wb_groups <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+  read_excel(sheet = "World Bank") %>%
+  filter(
+    is.na(iso_num) & !(name %in% c("Channel Islands", "Monaco", "Kosovo"))
+  ) %>%
   select(wb_code, name)
 
-countries <- read_excel("data/interim/countries.xlsx") %>%
+countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+  read_excel() %>%
   select(name_wb, name) %>% 
   mutate(name = replace(name, name == "People's Republic of China", "PRC"))
 
-wb1 <-
-  read_excel(
-    "data/raw/API_NE.TRD.GNFS.ZS_DS2_en_excel_v2_5552026.xls",
-    sheet = "Data",
-    skip = 3
+wb1 <- here("data", "raw", "API_NE.TRD.GNFS.ZS_DS2_en_excel_v2_5552026.xls") %>% 
+  read_excel(sheet = "Data", skip = 3) %>%
+  pivot_longer(
+    cols = matches("[0-9]{4}"),
+    names_to = "t",
+    values_to = "openness"
   ) %>%
-  pivot_longer(cols = matches("[0-9]{4}"),
-               names_to = "t",
-               values_to = "openness") %>%
   select(`Country Name`, `Country Code`, t, openness)
 
-wb2 <-
-  read_excel(
-    "data/raw/API_NY.GDP.MKTP.PP.CD_DS2_en_excel_v2_5552699.xls",
-    sheet = "Data",
-    skip = 3
+wb2 <- here("data", "raw", "API_NY.GDP.MKTP.PP.CD_DS2_en_excel_v2_5552699.xls") %>% 
+  read_excel(sheet = "Data", skip = 3) %>%
+  pivot_longer(
+    cols = matches("[0-9]{4}"),
+    names_to = "t",
+    values_to = "gdp"
   ) %>%
-  pivot_longer(cols = matches("[0-9]{4}"),
-               names_to = "t",
-               values_to = "gdp") %>%
   select(`Country Name`, `Country Code`, t, gdp)
 
 df <- wb1 %>%
@@ -61,39 +59,33 @@ df <- wb1 %>%
 
 # Add Kazakhstan excluding oil trade
 
-merch_trade <-
-  read_excel(
-    "data/raw/API_TG.VAL.TOTL.GD.ZS_DS2_en_excel_v2_5556032.xls",
-    sheet = "Data",
-    skip = 3
+merch_trade <- here("data", "raw", "API_TG.VAL.TOTL.GD.ZS_DS2_en_excel_v2_5556032.xls") %>% 
+  read_excel(sheet = "Data", skip = 3) %>%
+  pivot_longer(
+    cols = matches("[0-9]{4}"),
+    names_to = "t",
+    values_to = "merch_trade"
   ) %>%
-  pivot_longer(cols = matches("[0-9]{4}"),
-               names_to = "t",
-               values_to = "merch_trade") %>%
   filter(`Country Name` == "Kazakhstan" & t == 2021) %>% 
   pull(merch_trade)
 
-fuel_exports <-
-  read_excel(
-    "data/raw/API_TX.VAL.FUEL.ZS.UN_DS2_en_excel_v2_5555455.xls",
-    sheet = "Data",
-    skip = 3
+fuel_exports <- here("data", "raw", "API_TX.VAL.FUEL.ZS.UN_DS2_en_excel_v2_5555455.xls") %>% 
+  read_excel(sheet = "Data", skip = 3) %>%
+  pivot_longer(
+    cols = matches("[0-9]{4}"),
+    names_to = "t",
+    values_to = "fuel_exports"
   ) %>%
-  pivot_longer(cols = matches("[0-9]{4}"),
-               names_to = "t",
-               values_to = "fuel_exports") %>%
   select(`Country Name`, t, fuel_exports) %>% 
   filter(`Country Name` == "Kazakhstan" & t >= 2010 & t <= 2020)
 
-fuel_imports <-
-  read_excel(
-    "data/raw/API_TM.VAL.FUEL.ZS.UN_DS2_en_excel_v2_5555456.xls",
-    sheet = "Data",
-    skip = 3
+fuel_imports <- here("data", "raw", "API_TM.VAL.FUEL.ZS.UN_DS2_en_excel_v2_5555456.xls") %>% 
+  read_excel(sheet = "Data", skip = 3) %>%
+  pivot_longer(
+    cols = matches("[0-9]{4}"),
+    names_to = "t",
+    values_to = "fuel_imports"
   ) %>%
-  pivot_longer(cols = matches("[0-9]{4}"),
-               names_to = "t",
-               values_to = "fuel_imports") %>%
   select(`Country Name`, t, fuel_imports) %>% 
   filter(`Country Name` == "Kazakhstan" & t >= 2010 & t <= 2020)
 
@@ -128,7 +120,7 @@ dfout <- df %>%
   drop_na %>%
   select(t, name, openness, gdp)
 
-write_csv(dfout, "data/final/2.2_openness.csv")
+write_csv(dfout, here("data", "final", "2.2_openness.csv"))
 
 # PLOT ----
 
@@ -251,7 +243,7 @@ plot <- ggplot() +
   )
 
 ggsave(
-  "figures/2.2_openness.pdf",
+  here("figures", "2.2_openness.pdf"),
   plot,
   device = cairo_pdf,
   width = 16,

@@ -1,9 +1,11 @@
 # GDP GROWTH
 
 rm(list = ls())
+library(here)
 library(tidyverse)
 
-df <- read_csv("data/final/2.1_growth.csv") %>%
+df <- here("data", "final", "2.1_growth.csv") %>% 
+  read_csv() %>%
   mutate(
     decade = floor(t / 10) * 10,
     forecast = ifelse(t %in% 2023:2028, TRUE, FALSE)
@@ -86,13 +88,5 @@ ggsave(
   height = 10,
   unit = "cm"
 )
-
-# ggsave(
-#   "figures/2.1_growth.png",
-#   plot,
-#   width = 16,
-#   height = 8,
-#   unit = "cm"
-# )
 
 ######### END #########

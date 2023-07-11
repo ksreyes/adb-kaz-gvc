@@ -1,19 +1,21 @@
 # TRADE NETWORK
 
 rm(list = ls())
+library(here)
 library(tidyverse)
 library(scales)
 library(tidygraph)
 library(ggraph)
 
-countries <- read_excel("data/interim/countries.xlsx") %>%
-  select(iso_num, code, name, region)
-countries <- countries %>%
+countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+  read_excel() %>%
+  select(iso_num, code, name, region) %>%
   mutate(code = replace(code, name == "Other Asia, not elsewhere specified", "TAP"))
 
 # DATA ----
 
-df <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2021_V202301.csv")
+df <- here("data", "raw", "BACI_HS02_V202301", "BACI_HS02_Y2021_V202301.csv") %>% 
+  read_csv()
 
 # Rank all of i's trading partners. Network only shows nodes that are among the 
 # top 3 of another economy's trading partners
@@ -125,21 +127,13 @@ plot <- ggraph(network, layout = "dh") +
   )
 
 ggsave(
-  "figures/2.3_network.pdf",
+  here("figures", "2.3_network.pdf"),
   plot,
   device = cairo_pdf,
   width = 16,
   height = 12,
   unit = "cm"
 )
-
-# ggsave(
-#   "figures/2.3_network.png",
-#   plot,
-#   width = 16,
-#   height = 12,
-#   unit = "cm"
-# )
 
 # APPENDIX ----
 

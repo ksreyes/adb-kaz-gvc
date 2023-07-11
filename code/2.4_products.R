@@ -9,8 +9,8 @@ country <- 398
 
 # Choose products to highlight
 
-products <-
-  read_excel("data/interim/sectors.xlsx", sheet = "hs02_mrio") %>%
+products <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+  read_excel(sheet = "hs02_mrio") %>%
   select(hs02:section_name) %>% 
   mutate(hs02 = as.numeric(hs02))
 
@@ -237,7 +237,7 @@ plot <- ggplot(df, aes(x = v, y = t, fill = group)) +
   )
 
 ggsave(
-  "figures/2.4_products.pdf",
+  here("figures", "2.4_products.pdf"),
   plot,
   device = cairo_pdf,
   width = 16,
@@ -245,20 +245,12 @@ ggsave(
   unit = "cm"
 )
 
-# ggsave(
-#   "figures/2.4_products.png",
-#   plot,
-#   width = 16,
-#   height = 12,
-#   unit = "cm"
-# )
-
 # APPENDIX ----
 
 # Check which exports are largest
 
-products <-
-  read_excel("data/interim/sectors.xlsx", sheet = "hs02_mrio") %>%
+products <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+  read_excel(sheet = "hs02_mrio") %>%
   select(hs02:section_name)
 
 baci19 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2019_V202301.csv")
