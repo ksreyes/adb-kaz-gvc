@@ -2,6 +2,7 @@ literature
 notes
 figures/figure-drafts/
 data/raw/
+codes/colors.R
 
 # R
 .Rproj.user
