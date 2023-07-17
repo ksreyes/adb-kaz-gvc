@@ -1,10 +1,11 @@
 # GVC LENGTH
 
-# PRELIMINARIES ----
+# SET UP ----
 
 rm(list = ls())
 library(here)
 library(readxl)
+library(arrow)
 library(tidyverse)
 library(cowplot)
 
@@ -22,7 +23,7 @@ sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>%
   bind_rows(tibble(i = 0, sector = "Aggregate")) %>% 
   arrange(i)
 
-countries <- here("..", "mrio-processing", "data", "interim", "countries.xlsx") %>% 
+countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
   filter(!(is.na(mrio)))
 
@@ -30,12 +31,12 @@ select <- countries$mrio[which(countries$name == "Kazakhstan")]
 
 # DATA ----
 
-apl62 <- here("..", "mrio-processing", "data", "final", "lengths62.csv") %>% 
-  read_csv() %>% 
+apl62 <- here("..", "mrio-processing", "data", "lengths62.parquet") %>% 
+  read_parquet() %>% 
   filter(s == select & agg %in% c(0, 35) & t %in% c(2000, 2010))
 
-apl72 <- here("..", "mrio-processing", "data", "final", "lengths.csv") %>% 
-  read_csv() %>% 
+apl72 <- here("..", "mrio-processing", "data", "lengths.parquet") %>% 
+  read_parquet() %>% 
   filter(s == select & agg %in% c(0, 35) & t %in% c(2020, 2022))
 
 df <- apl62 %>% 
@@ -145,9 +146,7 @@ ggsave(
   here("figures", "3.7_gvclengths.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 10,
-  unit = "cm"
+  width = 16, height = 10, unit = "cm"
 )
 
 ######### END #########

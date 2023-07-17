@@ -26,7 +26,7 @@ year <- 2022
 
 # DATA ----
 
-df <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta-es.parquet") %>% 
+df <- here("..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
   read_parquet() %>%
   filter(t == year & s == select) %>% 
   mutate(
@@ -122,9 +122,7 @@ ggsave(
   here("figures", "3.5_sector_decomp.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 17,
-  unit = "cm"
+  width = 16, height = 17, unit = "cm"
 )
 
 ######### END #########

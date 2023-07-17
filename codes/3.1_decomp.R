@@ -16,7 +16,7 @@ select <- countries$mrio[which(countries$name == "Kazakhstan")]
 
 # LOAD DATA ----
 
-df72 <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta.parquet") %>% 
+df72 <- here("..", "mrio-processing", "data", "trade-accounting", "ta.parquet") %>% 
   read_parquet() %>% 
   filter(s == select) %>% 
   group_by(t) %>% 
@@ -27,7 +27,7 @@ df72 <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta
          PDC = PDC1 + PDC2) %>% 
   select(t, Exports, DAVAX1, DAVAX:REF, FVA, PDC)
 
-df62 <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta62.parquet") %>% 
+df62 <- here("..", "mrio-processing", "data", "trade-accounting", "ta62.parquet") %>% 
   read_parquet() %>% 
   filter(s == select & t < 2017) %>%
   group_by(t) %>% 
@@ -131,9 +131,7 @@ ggsave(
   here("figures", "3.1_decomp.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 10,
-  unit = "cm"
+  width = 16, height = 10, unit = "cm"
 )
 
 ######### END #########

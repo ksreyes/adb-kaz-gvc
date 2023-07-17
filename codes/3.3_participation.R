@@ -16,12 +16,12 @@ select <- countries$mrio[which(countries$name == "Kazakhstan")]
 
 # DATA ----
 
-df62 <- here("..", "mrio-processing", "data", "final", "gvcp62.csv") %>% 
+df62 <- here("..", "mrio-processing", "data", "gvcp62.csv") %>% 
   read_csv() %>% 
   filter(s == select & agg == 0 & t < 2017) %>% 
   select(t, GVCP_trade_f, GVCP_trade_b, GVCP_prod)
 
-df72 <- here("..", "mrio-processing", "data", "final", "gvcp.csv") %>% 
+df72 <- here("..", "mrio-processing", "data", "gvcp.csv") %>% 
   read_csv() %>% 
   filter(s == select & agg == 0) %>% 
   select(t, GVCP_trade_f, GVCP_trade_b, GVCP_prod)
@@ -127,9 +127,7 @@ ggsave(
   here("figures", "3.3_participation.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 9,
-  unit = "cm"
+  width = 16, height = 9, unit = "cm"
 )
 
 ######### END #########

@@ -25,7 +25,7 @@ countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>%
 
 # DATA ----
 
-gvcp_world <- here("..", "mrio-processing", "data", "final", "gvcp.csv") %>% 
+gvcp_world <- here("..", "mrio-processing", "data", "gvcp.csv") %>% 
   read_csv() %>% 
   filter(t == year & agg == 0) %>% 
   group_by(t) %>% 
@@ -38,7 +38,7 @@ gvcp_world <- here("..", "mrio-processing", "data", "final", "gvcp.csv") %>%
   ) %>% 
   select(s, name, t, GVCP_trade, GVCP_prod)
 
-gvcp62_world <- here("..", "mrio-processing", "data", "final", "gvcp62.csv") %>% 
+gvcp62_world <- here("..", "mrio-processing", "data", "gvcp62.csv") %>% 
   read_csv() %>% 
   filter(t %in% c(2000, 2010) & agg == 0) %>% 
   group_by(t) %>% 
@@ -51,13 +51,13 @@ gvcp62_world <- here("..", "mrio-processing", "data", "final", "gvcp62.csv") %>%
   ) %>% 
   select(s, name, t, GVCP_trade, GVCP_prod)
 
-gvcp <- here("..", "mrio-processing", "data", "final", "gvcp.csv") %>% 
+gvcp <- here("..", "mrio-processing", "data", "gvcp.csv") %>% 
   read_csv() %>% 
   filter(t == year & agg == 0 & s %in% (countries %>% pull(s))) %>% 
   left_join(countries) %>% 
   select(s, name, t, GVCP_trade, GVCP_prod) 
 
-gvcp62 <- here("..", "mrio-processing", "data", "final", "gvcp62.csv") %>% 
+gvcp62 <- here("..", "mrio-processing", "data", "gvcp62.csv") %>% 
   read_csv() %>% 
   filter(t %in% c(2000, 2010) & agg == 0 & s %in% (countries %>% pull(s))) %>% 
   left_join(countries) %>% 
@@ -193,9 +193,7 @@ ggsave(
   here("figures", "3.4_partcomp.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 6.5,
-  unit = "cm"
+  width = 16, height = 6.5, unit = "cm"
 )
 
 ######### END #########

@@ -19,7 +19,7 @@ countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>%
 
 select <- countries$mrio[which(countries$name == "Kazakhstan")]
 
-df <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta.parquet") %>% 
+df <- here("..", "mrio-processing", "data", "trade-accounting", "ta.parquet") %>% 
   read_parquet() %>% 
   filter(s == select & t %in% years) %>% 
   left_join(countries, by = c("r" = "mrio"))
@@ -110,7 +110,7 @@ rex <- df %>%
   )
 
 
-df_fva <- here("..", "mrio-processing", "data", "interim", "trade-accounting", "ta-fva.parquet") %>% 
+df_fva <- here("..", "mrio-processing", "data", "trade-accounting", "ta-fva.parquet") %>% 
   read_parquet() %>% 
   filter(s == select & t %in% years) %>% 
   left_join(countries, by = c("u" = "mrio"))
@@ -206,9 +206,7 @@ ggsave(
   here("figures", "3.2_anatomy.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 10,
-  unit = "cm"
+  width = 16, height = 10, unit = "cm"
 )
 
 ######### END #########
