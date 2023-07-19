@@ -7,7 +7,7 @@ library(here)
 library(arrow)
 library(tidyverse)
 
-sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+sectors <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
   read_excel() %>% 
   group_by(ind, name_short) %>%
   distinct(ind) %>%
@@ -17,7 +17,7 @@ sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>%
 focusnames <- c("Mining", "Metals")
 focus <- sectors %>% filter(name_short %in% focusnames) %>% pull(ind)
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
   filter(!(is.na(mrio))) %>% 
   mutate(s = mrio) %>% 
@@ -30,10 +30,10 @@ countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>%
     region = replace(region, name == "Rest of the world", "Rest of the world")
   )
 
-select <- countries$s[which(countries$name == "Kazakhstan")]
+select <- countries %>% filter(name == "Kazakhstan") %>% pull(s)
 
 years72 <- 2017:2022
-years62 <- 2010:2016
+years62 <- 2007:2016
 G <- 73
 G62 <- 63
 N <- 35
@@ -49,7 +49,7 @@ w_A <- w_B <- w62_A <- w62_B <- tibble()
 
 for (year in years72) {
   
-  w_t <- here("..", "mrio-processing", "data", "reer", "reer-weights-sector.parquet") %>% 
+  w_t <- here("..", "..", "mrio-processing", "data", "reer", "reer-weights-sector.parquet") %>% 
     read_parquet() %>% 
     filter(t == year) %>% 
     select(-t)
@@ -97,7 +97,7 @@ for (year in years72) {
 
 for (year in years62) {
   
-  w62_t <- here("..", "mrio-processing", "data", "reer", "reer62-weights-sector.parquet") %>% 
+  w62_t <- here("..", "..", "mrio-processing", "data", "reer", "reer62-weights-sector.parquet") %>% 
     read_parquet() %>% 
     filter(t == year) %>% 
     select(-t)
@@ -151,8 +151,8 @@ df_B <- bind_rows(w62_B, w_B) %>%
   left_join(countries) %>% 
   pivot_wider(names_from = t, values_from = w)
 
-# write_csv(df1, here("data", Drafts/reerw_textiles.csv"))
-# write_csv(df2, paste0(path[2], "Drafts/reerw_agriculture.csv"))
+write_csv(df_A, here("data", "final", "4.3a_reerw.csv"))
+write_csv(df_B, here("data", "final", "4.3b_reerw.csv"))
 
 # PLOT ----
 
@@ -276,7 +276,7 @@ plot_A <- ggplot(dfplot_A, aes(x = t, y = w, fill = name)) +
     "#E9532B", "#E88468", "#FDB415", 
     "gray75"
   )) + 
-  scale_x_discrete(labels = c(2010, 11:22)) +
+  scale_x_discrete(labels = c(2007, "08", "09", 10:22)) +
   scale_y_continuous(breaks = c(.25, .75), labels = function(x) paste0(100 * x, "%")) +
   theme(
     plot.margin = margin(5, 2, 15, 2),
@@ -322,7 +322,7 @@ plot_B <- ggplot(dfplot_B, aes(x = t, y = w, fill = name)) +
     "#E9532B", "#E88468", "#FDB415", 
     "gray75"
   )) + 
-  scale_x_discrete(labels = c(2010, 11:22)) +
+  scale_x_discrete(labels = c(2007, "08", "09", 10:22)) +
   scale_y_continuous(breaks = c(.25, .75), labels = function(x) paste0(100 * x, "%")) +
   theme(
     plot.margin = margin(5, 2, 15, 2),
