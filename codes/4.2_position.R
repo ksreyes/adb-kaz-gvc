@@ -9,7 +9,7 @@ library(arrow)
 library(tidyverse)
 library(cowplot)
 
-sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+sectors <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
   read_excel() %>% 
   group_by(ind, name_short) %>%
   distinct(ind) %>%
@@ -19,7 +19,7 @@ sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>%
 focusnames <- c("Mining", "Metals")
 focus <- sectors %>% filter(name_short %in% focusnames) %>% pull(ind)
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
   filter(!(is.na(mrio))) %>% 
   mutate(s = mrio) %>% 
@@ -31,7 +31,7 @@ years <- c(2010, 2022)
 
 # Check which countries are significant in chosen sectors
 
-exports_A <- here("..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
+exports_A <- here("..", "..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[2] & i == focus[1]) %>% 
   group_by(s) %>% 
@@ -40,7 +40,7 @@ exports_A <- here("..", "mrio-processing", "data", "trade-accounting", "ta-es.pa
   left_join(countries) %>% 
   select(s, name, Exports)
 
-exports_B <- here("..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
+exports_B <- here("..", "..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[2] & i == focus[2]) %>% 
   group_by(s) %>% 
@@ -58,11 +58,11 @@ s_B <- countries %>% filter(name %in% select_B) %>% pull(s)
 
 # DATA ----
 
-df_A_t2 <- here("..", "mrio-processing", "data", "lengths.parquet") %>% 
+df_A_t2 <- here("..", "..", "mrio-processing", "data", "lengths.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[2])
 
-df_A_t1 <- here("..", "mrio-processing", "data", "lengths62.parquet") %>% 
+df_A_t1 <- here("..", "..", "mrio-processing", "data", "lengths62.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[1])
 
@@ -72,11 +72,11 @@ df_A <- bind_rows(df_A_t2, df_A_t1) %>%
   mutate(t = factor(t, levels = years)) %>% 
   select(i, s, name, t, PLv_GVC, PLy_GVC)
 
-df_B_t2 <- here("..", "mrio-processing", "data", "lengths.parquet") %>% 
+df_B_t2 <- here("..", "..", "mrio-processing", "data", "lengths.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[2])
 
-df_B_t1 <- here("..", "mrio-processing", "data", "lengths62.parquet") %>% 
+df_B_t1 <- here("..", "..", "mrio-processing", "data", "lengths62.parquet") %>% 
   read_parquet() %>% 
   filter(t == years[1])
 
@@ -85,6 +85,9 @@ df_B <- bind_rows(df_B_t2, df_B_t1) %>%
   left_join(countries) %>% 
   mutate(t = factor(t, levels = years)) %>% 
   select(i, s, name, t, PLv_GVC, PLy_GVC)
+
+write_csv(df_A, here("data", "final", "4.2a_position.csv"))
+write_csv(df_B, here("data", "final", "4.2b_position.csv"))
 
 
 # PLOT ----

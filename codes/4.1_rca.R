@@ -11,13 +11,13 @@ library(cowplot)
 
 year <- 2022
 
-sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+sectors <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
   read_excel() %>% 
   group_by(ind, name_short) %>%
   distinct(ind) %>%
   ungroup() 
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
   filter(!(is.na(mrio)))
 
@@ -25,10 +25,16 @@ select <- countries$mrio[which(countries$name == "Kazakhstan")]
 
 # DATA ----
 
-df <- here("..", "mrio-processing", "data", "rca.parquet") %>% 
+df <- here("..", "..", "mrio-processing", "data", "rca.parquet") %>% 
   read_parquet() %>% 
-  filter(t == year & agg == 35 & s == select) %>% 
+  filter(agg == 35 & s == select) %>% 
+  select(t, i, starts_with("exports"), starts_with("vaxos")) %>% 
+  group_by(i) %>% 
+  summarize(across(exports_si:vaxos_all, mean)) %>% 
+  ungroup() %>% 
   mutate(
+    rca = (exports_si / exports_s) / (exports_i / exports_all),
+    rca_vaxos = (vaxos_si / vaxos_s) / (vaxos_i / vaxos_all),
     exports_sh = exports_si / exports_s,
     exports_wsh = exports_i / exports_all,
     vaxos_sh = vaxos_si / vaxos_s,
@@ -38,7 +44,7 @@ df <- here("..", "mrio-processing", "data", "rca.parquet") %>%
   ) %>% 
   left_join(sectors, by = c("i" = "ind")) %>% 
   select(
-    t, s, i, name_short, 
+    i, name_short, 
     exports_si, exports_sh, exports_wsh, rca, rca_plot,
     vaxos_si, vaxos_sh, vaxos_wsh, rca_vaxos, rca_vaxos_plot
   )
@@ -47,11 +53,11 @@ df <- here("..", "mrio-processing", "data", "rca.parquet") %>%
 
 dfout <- df %>% 
   select(
-    t, s, i, name_short, exports_si, exports_sh, exports_wsh, rca,
+    i, name_short, exports_si, exports_sh, exports_wsh, rca,
     vaxos_si, vaxos_sh, vaxos_wsh, rca_vaxos
   )
 
-write_csv(dfout, here("data", "final", "rca.csv"))
+write_csv(dfout, here("data", "final", "4.1_rca.csv"))
 
 # PLOT ----
 
