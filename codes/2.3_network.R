@@ -3,19 +3,28 @@
 rm(list = ls())
 library(here)
 library(tidyverse)
+library(DBI)
+library(duckdb)
 library(scales)
 library(tidygraph)
 library(ggraph)
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
   select(iso_num, code, name, region) %>%
   mutate(code = replace(code, name == "Other Asia, not elsewhere specified", "TAP"))
 
 # DATA ----
 
-df <- here("data", "raw", "BACI_HS02_V202301", "BACI_HS02_Y2021_V202301.csv") %>% 
-  read_csv()
+con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
+
+df <- dbGetQuery(con, 
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE t = 2021"
+  )
+
+dbDisconnect(con, shutdown=TRUE)
 
 # Rank all of i's trading partners. Network only shows nodes that are among the 
 # top 3 of another economy's trading partners
@@ -65,6 +74,9 @@ edges <- edges %>%
   rename(to = id)
 
 edges <- select(edges, from, to, weight)
+
+write_csv(nodes, here("data", "final", "2.3_network_nodes.csv"))
+write_csv(edges, here("data", "final", "2.3_network_edges.csv"))
 
 # PLOT ----
 

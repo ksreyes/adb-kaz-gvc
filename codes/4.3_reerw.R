@@ -56,7 +56,7 @@ for (year in years72) {
   
   # Mining
   slice <- tibble(s = rep(1:G, each = N), i = rep(1:N, G), w_t) %>% 
-  filter(s == select & i == focus[1])
+    filter(s == select & i == focus[1])
   
   w_A <- rbind(
       w_A,

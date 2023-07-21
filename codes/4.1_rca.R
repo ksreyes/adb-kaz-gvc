@@ -21,7 +21,7 @@ countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx"
   read_excel() %>%
   filter(!(is.na(mrio)))
 
-select <- countries$mrio[which(countries$name == "Kazakhstan")]
+select <- countries %>% filter(name == "Kazakhstan") %>% pull(mrio)
 
 # DATA ----
 

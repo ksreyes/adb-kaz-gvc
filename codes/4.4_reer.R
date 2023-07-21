@@ -25,7 +25,7 @@ countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx"
   mutate(s = mrio62) %>% 
   select(s, name)
 
-selectnames <- c("Kazakhstan", "Russian Federation")
+selectnames <- c("Russian Federation", "Kazakhstan")
 select <- countries %>% filter(name %in% selectnames) %>% pull(s)
 
 years <- 2007:2021
@@ -56,12 +56,12 @@ write_csv(df_out, here("data/final/4.4_reer.csv"))
 # PLOT ----
 
 plot1 <- ggplot(
-    subset(df, s == select[1]), 
+    subset(df, s == select[2]), 
     aes(x = t, y = reer, color = name_short, group = name_short)
   ) + 
   geom_hline(yintercept = 0, size = .5, color = "gray75") + 
   geom_line(size = 1) + 
-  labs(title = selectnames[1]) + 
+  labs(title = selectnames[2]) + 
   scale_color_manual(values = c("#007DB7", "#00A5D2", "black")) + 
   scale_x_discrete(labels = c(2007, "", "09", "", 11, "", 13, "", 15, "", 17, "", 19, "", 21)) + 
   scale_y_continuous(
@@ -83,12 +83,12 @@ plot1 <- ggplot(
   )
 
 plot2 <- ggplot(
-    subset(df, s == select[2]), 
+    subset(df, s == select[1]), 
     aes(x = t, y = reer, color = name_short, group = name_short)
   ) + 
   geom_hline(yintercept = 0, size = .5, color = "gray75") + 
   geom_line(size = 1) + 
-  labs(title = selectnames[2]) + 
+  labs(title = selectnames[1]) + 
   scale_color_manual(values = c("#007DB7", "#00A5D2", "black")) + 
   scale_x_discrete(labels = c(2007, "", "09", "", 11, "", 13, "", 15, "", 17, "", 19, "", 21)) + 
   scale_y_continuous(

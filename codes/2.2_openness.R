@@ -14,21 +14,23 @@ highlight <-
     "Kyrgyz Republic",
     "Uzbekistan",
     "Russian Federation",
-    "Norway"
+    "Norway",
+    "United Kingdom",
+    "New Zealand"
   )
 
 # DATA ----
 
-wb_groups <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+wb_groups <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel(sheet = "World Bank") %>%
   filter(
-    is.na(iso_num) & !(name %in% c("Channel Islands", "Monaco", "Kosovo"))
+    is.na(iso_num) & !(wb_name %in% c("Channel Islands", "Monaco", "Kosovo"))
   ) %>%
-  select(wb_code, name)
+  select(wb_code, wb_name)
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
   read_excel() %>%
-  select(name_wb, name) %>% 
+  select(wb_name, name) %>% 
   mutate(name = replace(name, name == "People's Republic of China", "PRC"))
 
 wb1 <- here("data", "raw", "API_NE.TRD.GNFS.ZS_DS2_en_excel_v2_5552026.xls") %>% 
@@ -51,11 +53,10 @@ wb2 <- here("data", "raw", "API_NY.GDP.MKTP.PP.CD_DS2_en_excel_v2_5552699.xls") 
 
 df <- wb1 %>%
   left_join(wb2) %>%
-  mutate(wb_code = `Country Code`,
-         name_wb = `Country Name`) %>%
+  mutate(wb_code = `Country Code`, wb_name = `Country Name`) %>%
   left_join(countries) %>%
-  select(wb_code, name_wb, name, t, openness, gdp) %>%
-  filter(!(wb_code %in% wb_groups$wb_code) & t == 2021)
+  select(wb_code, wb_name, name, t, openness, gdp) %>%
+  filter(!(wb_code %in% wb_groups %>% pull(wb_code)) & t == 2021)
 
 # Add Kazakhstan excluding oil trade
 
@@ -230,33 +231,15 @@ plot <- ggplot() +
     axis.text = element_text(size = 8),
     legend.position = "none",
     panel.background = element_blank(),
-    panel.border = element_rect(
-      fill = NA,
-      color = "gray20",
-      linewidth = .5
-    ),
-    panel.grid.major = element_line(
-      color = "gray75",
-      linewidth = .25,
-      linetype = "dashed"
-    )
+    panel.border = element_rect(fill = NA, color = "gray20", linewidth = .5),
+    panel.grid.major = element_line(color = "gray75", linewidth = .25, linetype = "dashed")
   )
 
 ggsave(
   here("figures", "2.2_openness.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 10,
-  unit = "cm"
+  width = 16, height = 10, unit = "cm"
 )
-
-# ggsave(
-#   "figures/2.2_openness.png",
-#   plot,
-#   width = 16,
-#   height = 10,
-#   unit = "cm"
-# )
 
 ######### END #########

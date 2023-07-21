@@ -1,15 +1,21 @@
 # EXPORTS OF GOODS BY BROAD PRODUCT CATEGORIES
 
 rm(list = ls())
+library(here)
 library(readxl)
 library(tidyverse)
+library(arrow)
+library(DBI)
+library(duckdb)
 
-years <- 2002:2021
-country <- 398
+countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
+  read_excel()
+
+select <- countries %>% filter(name == "Kazakhstan") %>% pull(iso_num)
 
 # Choose products to highlight
 
-products <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+products <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
   read_excel(sheet = "hs02_mrio") %>%
   select(hs02:section_name) %>% 
   mutate(hs02 = as.numeric(hs02))
@@ -84,49 +90,37 @@ groups <- tibble(
     NA,
     NA,
     NA
-  )
-)
+  ))
 
 # DATA ----
 
-df1 <- tibble()
-
-for (t in 1:length(years)) {
-  
-  baci <-
-    read_csv(paste0(
-      "data/raw/BACI_HS02_V202301/BACI_HS02_Y",
-      years[t],
-      "_V202301.csv"
-    )) %>%
-    mutate(k = as.numeric(k))
-  
-  df_t <- baci %>%
-    filter(i == country) %>%
-    left_join(products, by = c("k" = "hs02")) %>%
-    group_by(t, i, group) %>%
-    summarize(v = sum(v)) %>%
-    ungroup() %>%
-    mutate(share = v / sum(v)) %>%
-    select(t, group, v) %>%
-    bind_rows(tibble(
-      t = years[t],
-      group = c("blank1", "blank2"),
-      v = c(0, 0)
-    ))
-
-  df1 <- rbind(df1, df_t)
-  
-}
-
-df <-
-  df1 %>% mutate(t = factor(t, levels = years),
-                 group = factor(group, levels = rev(groups$name)))
+df <- dbConnect(duckdb::duckdb(), dbdir = ":memory:") %>% 
+  dbGetQuery(sprintf(
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE i = %s",
+    select
+  )) %>% 
+  mutate(k = as.numeric(k)) %>% 
+  left_join(products, by = c("k" = "hs02")) %>%
+  group_by(t, i, group) %>%
+  summarize(v = sum(v)) %>%
+  ungroup() %>%
+  mutate(share = v / sum(v)) %>%
+  select(t, group, v) %>%
+  bind_rows(tibble(
+    t = 2010,
+    group = c("blank1", "blank2"),
+    v = c(0, 0)
+  )) %>% 
+  mutate(
+    t = factor(t, levels = 2002:2021),
+    group = factor(group, levels = groups %>% pull(name) %>% rev())
+  )
 
 dfout <- df %>%
   filter(!(group %in% c("blank1", "blank2"))) %>%
-  pivot_wider(names_from = group,
-              values_from = v) %>%
+  pivot_wider(names_from = group, values_from = v) %>%
   select(
     t,
     Food,
@@ -145,7 +139,7 @@ dfout <- df %>%
   mutate(Total = sum(c_across(Food:Others))) %>%
   arrange(desc(t))
 
-write_csv(dfout, "data/final/2.4_products.csv")
+write_csv(dfout, here("data", "final", "2.4_products.csv"))
 
 # PLOT ----
 
@@ -154,9 +148,7 @@ pos <- groups %>%
   mutate(x = cumsum(v / sum(v)))
 
 plot <- ggplot(df, aes(x = v, y = t, fill = group)) +
-  geom_bar(stat = "identity",
-           position = "fill",
-           width = .7) +
+  geom_bar(stat = "identity", position = "fill", width = .7) +
   geom_vline(
     xintercept = .75,
     linewidth = .25,
@@ -171,8 +163,7 @@ plot <- ggplot(df, aes(x = v, y = t, fill = group)) +
   ) +
   scale_x_continuous(breaks = c(.25, .75), labels = c("25%", "75%")) +
   guides(fill = guide_legend(reverse = TRUE)) +
-  scale_fill_manual(labels = rev(groups$labs),
-                    values = rev(groups$color)) +
+  scale_fill_manual(labels = rev(groups$labs), values = rev(groups$color)) +
   annotate(
     "text",
     x = pos$x[1] / 2,
@@ -224,13 +215,13 @@ plot <- ggplot(df, aes(x = v, y = t, fill = group)) +
     axis.title = element_blank(),
     axis.ticks = element_blank(),
     axis.text.x = element_text(size = 9),
-    axis.text.y = element_text(size = 9, margin = margin(0,-10, 0, 0)),
+    axis.text.y = element_text(size = 9, margin = margin(0, -10, 0, 0)),
     legend.title = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
-    legend.text = element_text(size = 8, margin = margin(0, 0, 0,-13)),
+    legend.text = element_text(size = 8, margin = margin(0, 0, 0, -13)),
     legend.position = "right",
-    legend.box.margin = margin(0, 0, 0,-25),
+    legend.box.margin = margin(0, 0, 0, -25),
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.major = element_blank()
@@ -240,39 +231,86 @@ ggsave(
   here("figures", "2.4_products.pdf"),
   plot,
   device = cairo_pdf,
-  width = 16,
-  height = 12,
-  unit = "cm"
+  width = 16, height = 12, unit = "cm"
 )
 
 # APPENDIX ----
 
-# Check which exports are largest
-
-products <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
+products <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
   read_excel(sheet = "hs02_mrio") %>%
+  mutate(hs02 = as.numeric(hs02)) %>% 
   select(hs02:section_name)
 
-baci19 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2019_V202301.csv")
-baci02 <- read_csv("data/raw/BACI_HS02_V202301/BACI_HS02_Y2002_V202301.csv")
+con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
 
-df19 <- baci19 %>%
-  filter(i == country) %>%
+# Check which exports are largest
+
+baci21 <- con %>% 
+  dbGetQuery(sprintf(
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE i = %s AND t = 2021",
+    select
+  )) %>% 
   left_join(products, by = c("k" = "hs02")) %>% 
   group_by(t, i, k, hs02_desc, section, section_name) %>% 
   summarize(v = sum(v)) %>% 
   ungroup() %>% 
   mutate(share = v / sum(v))
 
-df02 <- baci02 %>%
-  filter(i == country) %>%
+write_csv(baci21, here("data", "interim", "kaz_exports_2021.csv"))
+
+# Check who receives exports
+
+baci21_product <- con %>% 
+  dbGetQuery(sprintf(
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE i = %s AND t = 2021 AND k = 270900",
+    select
+  )) %>% 
+  left_join(countries, by = c("j" = "iso_num")) %>% 
+  select(t, i, j, name, v, q)
+
+write_csv(baci21_product, here("data", "interim", "kaz_exports_oil_2021.csv"))
+
+# Check what is exported to top partners
+
+baci21_partners <- con %>% 
+  dbGetQuery(sprintf(
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE i = %s AND t = 2021",
+    select
+  )) %>% 
+  filter(j %in% c(156, 643, 300, 826, 276)) %>% 
+  left_join(countries, by = c("j" = "iso_num")) %>% 
   left_join(products, by = c("k" = "hs02")) %>% 
-  group_by(t, i, k, hs02_desc, section, section_name) %>% 
+  select(t, i, j, name, k, hs02_desc, v, q) %>% 
+  group_by(t, i, j, name) %>% 
+  arrange(-v, .by_group = TRUE) %>% 
+  ungroup()
+
+write_csv(baci21_partners, here("data", "interim", "kaz_partners_2021.csv"))
+
+# Metals
+
+baci21_products_partners <- dbConnect(duckdb::duckdb(), dbdir = ":memory:") %>% 
+  dbGetQuery(sprintf(
+    "SELECT * 
+    FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
+    WHERE i = %s AND t = 2021",
+    select
+  )) %>% 
+  mutate(k = as.numeric(k)) %>% 
+  left_join(products, by = c("k" = "hs02")) %>%
+  filter(section == 15) %>% 
+  group_by(t, i, j) %>% 
   summarize(v = sum(v)) %>% 
   ungroup() %>% 
-  mutate(share = v / sum(v))
+  left_join(countries, by = c("j" = "iso_num")) %>% 
+  select(t, i, j, name, v)
 
-write_csv(df19, "data/interim/kaz_exports_2019.csv")
-write_csv(df02, "data/interim/kaz_exports_2002.csv")
+write_csv(baci21_products_partners, here("data", "interim", "kaz_products_partners_2021.csv"))
 
 ######### END #########
