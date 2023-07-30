@@ -109,7 +109,7 @@ ggsave(
   here("figures", str_glue("{filename}.pdf")),
   plot,
   device = cairo_pdf,
-  width = 16, height = 14, unit = "cm"
+  width = 16, height = 13, unit = "cm"
 )
 
 ######### END #########
