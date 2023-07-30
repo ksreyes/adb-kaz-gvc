@@ -145,7 +145,7 @@ plot4 <- ggplot(
     stat = "identity", position = position_dodge(.85), width = .8, fill = "#6BB305"
   ) +
   labs(title = "FVA origin") + alpha + text + scale + theme + 
-  annotate("text", x = .33, y = 10.2, hjust = 1, label = "33.9%", size = 2, alpha = .5)
+  annotate("text", x = .33, y = 10.225, hjust = 1, label = "33.9%", size = 2, alpha = .75, color = "white")
 
 plot <- plot_grid(
   plot1, plot2, plot3, plot4, 
