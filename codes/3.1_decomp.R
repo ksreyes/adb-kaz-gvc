@@ -1,6 +1,6 @@
-# EXPORTS DECOMPOSITION
+# EXPORTS BY VALUE ADDED CATEGORIES
 
-# PRELIMINARIES ----
+# Setup -------------------------------------------------------------------
 
 rm(list = ls())
 library(here)
@@ -8,68 +8,54 @@ library(arrow)
 library(readxl)
 library(tidyverse)
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
-  read_excel() %>%
-  filter(!(is.na(mrio)))
+filename <- "3.1_decomp"
 
-select <- countries$mrio[which(countries$name == "Kazakhstan")]
+select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
+  read_excel() |>
+  filter(name == "Kazakhstan") |> 
+  pull(mrio)
 
-# LOAD DATA ----
 
-df72 <- here("..", "mrio-processing", "data", "trade-accounting", "ta.parquet") %>% 
-  read_parquet() %>% 
-  filter(s == select) %>% 
-  group_by(t) %>% 
-  summarize(across(Exports:PDC2, sum)) %>%
-  mutate(DAVAX = DAVAX1 + DAVAX2,
-         REX = REX1 + REX2 + REX3,
-         REF = REF1 + REF2,
-         PDC = PDC1 + PDC2) %>% 
-  select(t, Exports, DAVAX1, DAVAX:REF, FVA, PDC)
+# Load data ---------------------------------------------------------------
 
-df62 <- here("..", "mrio-processing", "data", "trade-accounting", "ta62.parquet") %>% 
-  read_parquet() %>% 
-  filter(s == select & t < 2017) %>%
-  group_by(t) %>% 
-  summarize(across(Exports:PDC2, sum)) %>%
-  mutate(DAVAX = DAVAX1 + DAVAX2,
-         REX = REX1 + REX2 + REX3,
-         REF = REF1 + REF2,
-         PDC = PDC1 + PDC2) %>% 
-  select(t, Exports, DAVAX1, DAVAX:REF, FVA, PDC)
+df <- here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
+  read_parquet() |> 
+  filter(breakdown == "es" & s == select & t < 2017) |>
+  bind_rows(
+    here("..", "..", "MRIO Processing", "data", "ta.parquet") |> 
+      read_parquet() |> 
+      filter(breakdown == "es" & s == select)
+  ) |> 
+  summarize(across(exports:pdc2, sum), .by = t) |>
+  mutate(
+    davax = davax1 + davax2,
+    rex = rex1 + rex2 + rex3,
+    ref = ref1 + ref2,
+    pdc = pdc1 + pdc2
+  ) |> 
+  select(t, exports, davax1, davax:ref, fva, pdc)
 
-decomp <- df62 %>% 
-  bind_rows(df72) %>% 
-  mutate(t = as.numeric(t))
+df |> write_csv(here("data", "final", str_glue("{filename}.csv")))
 
-write_csv(decomp, here("data", "final", "3.1_decomp.csv"))
 
-df <- decomp %>% 
-  select(t, DAVAX:REF, FVA, PDC)
+# Plot --------------------------------------------------------------------
 
-# PLOT ----
-
-# Add empty 2001
-
-df01 <- df[1, ] %>%
-  mutate(t = 2001)
-df01[1, -1] <- 0
-
-df <- df %>%
-  bind_rows(df01) %>%
-  pivot_longer(cols = DAVAX:PDC,
-               names_to = "category") %>%
-  mutate(category = factor(category,
-                           levels = rev(c("DAVAX", "REX", "REF", "FVA", "PDC"))),
-         t = factor(t, levels = c(2000:2001, 2007:2022)))
+df_plot <- df |> select(-exports, -davax1) |> 
+  add_row(t = 2001) |> 
+  pivot_longer(cols = -t, names_to = "category") |>
+  mutate(
+    category = factor(category, levels = colnames(df)[-1:-3] |> rev()),
+    t = factor(t, levels = c(df$t, 2001) |> sort())
+  )
 
 # Box production-based GVC
 
-box <- decomp %>%
-  select(t, Exports, DAVAX1) %>%
-  mutate(x = setdiff(1:(n() + 1), 2),
-         max = Exports / 1000,
-         min = DAVAX1 / 1000)
+box <- df |> select(t, exports, davax1) |>
+  mutate(
+    x = setdiff(1:(n() + 1), 2),
+    max = exports / 1000,
+    min = davax1 / 1000
+  )
 
 e <- .34
 
@@ -78,7 +64,7 @@ e <- .34
 plot <- ggplot() + 
   
   geom_bar(
-    data = df, 
+    data = df_plot, 
     aes(x = t, y = value / 1000, fill = category),
     stat = "identity", position = "stack", width = .7
   ) +
@@ -94,14 +80,15 @@ plot <- ggplot() +
     x = 13, y = 90, size = 3, hjust = .5, color = "gray25"
   ) + 
   geom_segment(
-    data = df[1, ],
+    data = df_plot |> slice(1),
     x = 11.45, xend = 10.35, y = 90, yend = 83, linewidth = .5, color = "gray25"
   ) + 
   
   scale_x_discrete(labels = c(2000, "", 2007, "08", "09", 10:22)) +
   scale_y_continuous(name = "$ billion", limits = c(0, 105)) +
   scale_fill_manual(
-    values = rev(c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B"))
+    labels = colnames(df)[-1:-3] |> rev() |> toupper(),
+    values = c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B") |> rev()
   ) + 
   guides(fill = guide_legend(reverse = TRUE)) + 
   
@@ -123,12 +110,11 @@ plot <- ggplot() +
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(
-      color = "gray75", size = .25, linetype = "dashed"
-    ))
+    panel.grid.major.y = element_line(color = "gray75", size = .25, linetype = "dashed")
+  )
 
 ggsave(
-  here("figures", "3.1_decomp.pdf"),
+  here("figures", str_glue("{filename}.pdf")),
   plot,
   device = cairo_pdf,
   width = 16, height = 10, unit = "cm"
