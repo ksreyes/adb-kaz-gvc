@@ -1,22 +1,24 @@
 # SKYLINE CHART
 
-# SET UP ----
+# Setup -------------------------------------------------------------------
 
 rm(list = ls())
 library(here)
 library(tidyverse)
-#library(reshape)
 
-# DATA ----
+filename <- "5.2_skyline"
 
-df <- here("data", "interim", "skyline.csv") %>% 
+
+# Data --------------------------------------------------------------------
+
+df <- here("data", "interim", "skyline.csv") |> 
   read_csv()
 
 N <- nrow(df)
-x <- df %>% pull(x)
-sf <- df %>% pull(sf)
-se <- df %>% pull(se)
-sm <- df %>% pull(sm)
+x <- df |> pull(x)
+sf <- df |> pull(sf)
+se <- df |> pull(se)
+sm <- df |> pull(sm)
 
 # Geometry of skylines
 
@@ -26,16 +28,17 @@ left <- c(0, right[-N])
 height1 <- x / sf
 height2 <- (sm + x) / sf
 mid <- (left + right) / 2
-label <- df %>% pull(abv)
+label <- df |> pull(abv)
 label[which(width < .015)] <- ""
 
-df <- tibble(i = df %>% pull(abv), width, left, right, height1, height2, mid, label)
+df <- tibble(i = df |> pull(abv), width, left, right, height1, height2, mid, label)
 
 pos_primary <- right[2] / 2
 pos_manuf <- (right[2] + right[18]) / 2
 pos_services <- (right[18] + right[35]) / 2
 
-# PLOT ----
+
+# Plot --------------------------------------------------------------------
 
 plot <- ggplot(df) + 
   
@@ -112,7 +115,7 @@ plot <- ggplot(df) +
   )
 
 ggsave(
-  here("figures", "5.2_skyline.pdf"),
+  here("figures", str_glue("{filename}.pdf")),
   plot,
   device = cairo_pdf,
   width = 16, height = 10, unit = "cm"
