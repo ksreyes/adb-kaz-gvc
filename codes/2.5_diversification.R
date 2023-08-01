@@ -1,13 +1,18 @@
 # TRADE DIVERSIFICATION
 
+# Setup -------------------------------------------------------------------
+
 rm(list = ls())
 library(here)
 library(tidyverse)
 library(DBI)
 library(duckdb)
 
-party <-
-  c(
+filename <- "2.5_diversification"
+
+years <- c(2005, 2010, 2015, 2021)
+
+include <- c(
     "Saudi Arabia",
     "Kyrgyz Republic",
     "Kazakhstan",
@@ -15,83 +20,51 @@ party <-
     "Russian Federation"
   )
 
-countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
-  read_excel() %>%
-  select(iso_num, code, name, region) %>% 
-  filter(name %in% party)
+countries <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
+  read_excel(sheet = "BACI") |>
+  drop_na(iso_num) |> 
+  left_join(
+    here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
+      read_excel(sheet = "Consolidated")
+  ) |> 
+  select(baci_num, name) |> 
+  filter(name %in% include)
 
-products <- here("..", "..", "mrio-processing", "data", "external", "product_codes_HS02_V202301.csv") %>% 
-  read_csv() %>%
-  mutate(hs02_2 = substr(code, 1, 2),
-         hs02_4 = substr(code, 1, 4)) %>% 
-  select(hs02_2, hs02_4, hs02 = code, hs02_name = description) 
 
-years <- c(2005, 2010, 2015, 2021)
+# Data --------------------------------------------------------------------
 
-# DATA ----
+con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
 
-get_hhi <- function(baci, country) {
-  baci %>%
-    filter(i == countries %>% slice(country) %>% pull(iso_num)) %>%
-    left_join(products, by = c("k" = "hs02")) %>%
-    left_join(countries, by = c("i" = "iso_num")) %>%
-    group_by(t, i, name, hs02_4) %>%
-    summarize(v = sum(v)) %>%
-    ungroup() %>%
-    mutate(
-      share = v / sum(v),
-      share2 = share ^ 2
-    ) %>%
-    group_by(name, t) %>%
-    summarize(hhi = sum(share2)) %>%
-    ungroup()
-}
+baci <- con |> 
+  dbGetQuery(sprintf(
+    "SELECT t, i, substring(k, -6, 4) AS k4, sum(v) AS v
+    FROM '../../../Repos/baci/final/BACI_HS02_V202301.parquet'
+    WHERE t in (%s) AND i IN (%s)
+    GROUP BY t, i, k4",
+    str_flatten_comma(years),
+    str_flatten_comma(countries$baci_num)
+  ))
 
-df <- tibble()
+dbDisconnect(con, shutdown=TRUE)
 
-for (t in 1:length(years)) {
+baci |> 
+  mutate(share2 = (v / sum(v)) ^ 2, .by = c(t, i)) |> 
+  summarize(hhi = sum(share2), .by = c(t, i)) |> 
+  left_join(countries, by = c("i" = "baci_num")) |> 
+  select(-i) |> 
+  arrange(name, t) |> 
+  pivot_wider(names_from = name, values_from = hhi) |> 
+  write_csv(here("data", "final", str_glue("{filename}.csv")))
+
+
+# Plot --------------------------------------------------------------------
+
+plot <- here("data", "final", str_glue("{filename}.csv")) |> 
+  read_csv() |> 
+  pivot_longer(cols = -t, names_to = "name", values_to = "hhi") |> 
   
-  con <- dbConnect(duckdb::duckdb(), dbdir = ":memory:")
-  
-  baci <- con %>% 
-    dbGetQuery(sprintf(
-      "SELECT * 
-      FROM read_parquet('../../mrio-processing/data/external/BACI_HS02_V202301.parquet') 
-      WHERE t = %d",
-      years[t]
-    )) %>% 
-    mutate(k = as.character(k))
-  
-  dbDisconnect(con, shutdown=TRUE)
-  
-  df <-
-    rbind(
-      df,
-      get_hhi(baci, 1),
-      get_hhi(baci, 2),
-      get_hhi(baci, 3),
-      get_hhi(baci, 4),
-      get_hhi(baci, 5)
-    )
-}
-
-dfout <- df %>% 
-  pivot_wider(names_from = name, values_from = hhi)
-
-write_csv(dfout, here("data", "final", "2.5_diversification.csv"))
-
-# PLOT ----
-
-df <- df %>% 
-  mutate(
-    t = factor(t, levels = years),
-    name = factor(name, levels = party)
-  )
-
-plot <- ggplot(df, aes(x = name, y = hhi, fill = t)) +
-  geom_bar(
-    stat = "identity", position = position_dodge(width = .8), width = .7
-  ) +
+  ggplot(aes(x = fct_reorder2(name, t, hhi), y = hhi, fill = factor(t))) +
+  geom_bar(stat = "identity", position = position_dodge(width = .8), width = .7) +
   geom_hline(yintercept = 0, linewidth = .25, color = "gray25") +
   scale_fill_manual(values = rev(c(
     "#007db7", "#00A5D2", "#63CCEC", "#9EE4FF"
@@ -121,10 +94,8 @@ plot <- ggplot(df, aes(x = name, y = hhi, fill = t)) +
   )
 
 ggsave(
-  here("figures", "2.5_diversification.pdf"),
+  here("figures", str_glue("{filename}.pdf")),
   plot,
   device = cairo_pdf,
   width = 16, height = 10, unit = "cm"
 )
-
-######### END #########
