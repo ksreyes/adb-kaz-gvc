@@ -16,9 +16,9 @@ select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |>
   pull(mrio)
 
 
-# Load data ---------------------------------------------------------------
+# Data --------------------------------------------------------------------
 
-df <- here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
+here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
   read_parquet() |> 
   filter(breakdown == "es" & s == select & t < 2017) |>
   bind_rows(
@@ -33,12 +33,14 @@ df <- here("..", "..", "MRIO Processing", "data", "ta62.parquet") |>
     ref = ref1 + ref2,
     pdc = pdc1 + pdc2
   ) |> 
-  select(t, exports, davax1, davax:ref, fva, pdc)
-
-df |> write_csv(here("data", "final", str_glue("{filename}.csv")))
+  select(t, exports, davax1, davax:ref, fva, pdc) |> 
+  write_csv(here("data", "final", str_glue("{filename}.csv")))
 
 
 # Plot --------------------------------------------------------------------
+
+df <- here("data", "final", str_glue("{filename}.csv")) |> 
+  read_csv()
 
 df_plot <- df |> select(-exports, -davax1) |> 
   add_row(t = 2001) |> 
@@ -57,21 +59,15 @@ box <- df |> select(t, exports, davax1) |>
     min = davax1 / 1000
   )
 
-e <- .34
-
-# Plot and export
-
 plot <- ggplot() + 
   
   geom_bar(
-    data = df_plot, 
     aes(x = t, y = value / 1000, fill = category),
-    stat = "identity", position = "stack", width = .7
+    df_plot, stat = "identity", position = "stack", width = .7
   ) +
   geom_rect(
-    data = box,
-    aes(ymin = min, ymax = max, xmin = x - e, xmax = x + e),
-    fill = NA, color = "black"
+    aes(ymin = min, ymax = max, xmin = x - .34, xmax = x + .34),
+    box, fill = NA, color = "black"
   ) +
   geom_hline(yintercept = 0, size = .25, color = "gray25") + 
   
@@ -88,16 +84,14 @@ plot <- ggplot() +
   scale_y_continuous(name = "$ billion", limits = c(0, 105)) +
   scale_fill_manual(
     labels = colnames(df)[-1:-3] |> rev() |> toupper(),
-    values = c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B") |> rev()
+    values = rev(c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B"))
   ) + 
   guides(fill = guide_legend(reverse = TRUE)) + 
   
   theme(
     plot.margin = margin(13, 2, 10, 2),
     axis.title.x = element_blank(),
-    axis.title.y = element_text(
-      size = 9, angle = 0, hjust = 1, margin = margin(0, -20, 0, 0)
-    ),
+    axis.title.y = element_text(size = 9, angle = 0, hjust = 1, margin = margin(r = -20)),
     axis.ticks = element_blank(),
     axis.text.x = element_text(size = 9, margin = margin(-8, 0, 0, 0)),
     axis.text.y = element_text(size = 9),
@@ -119,5 +113,3 @@ ggsave(
   device = cairo_pdf,
   width = 16, height = 10, unit = "cm"
 )
-
-######### END #########
