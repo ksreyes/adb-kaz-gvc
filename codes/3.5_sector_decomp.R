@@ -1,6 +1,6 @@
 # EXPORTS DECOMPOSITION BY SECTOR
 
-# PRELIMINARIES ----
+# Setup -------------------------------------------------------------------
 
 rm(list = ls())
 library(here)
@@ -8,105 +8,76 @@ library(readxl)
 library(arrow)
 library(tidyverse)
 
-sectors <- here("..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
-  read_excel() %>%
-  group_by(ind, name_short) %>%
-  distinct(ind) %>%
-  arrange(ind) %>%
-  rename(i = ind, sector = name_short) %>% 
-  ungroup() %>% 
-  bind_rows(tibble(i = 0, sector = "Aggregate"))
+filename <- "3.5_sector_decomp"
 
-countries <- here("..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
-  read_excel() %>%
-  filter(!(is.na(mrio)))
-
-select <- countries$mrio[which(countries$name == "Kazakhstan")]
 year <- 2022
 
-# DATA ----
+select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
+  read_excel() |>
+  filter(name == "Kazakhstan") |> 
+  pull(mrio)
 
-df <- here("..", "mrio-processing", "data", "trade-accounting", "ta-es.parquet") %>% 
-  read_parquet() %>%
-  filter(t == year & s == select) %>% 
+# Data --------------------------------------------------------------------
+
+sectors <- here("..", "..", "MRIO Processing", "dicts", "sectors.xlsx") |> 
+  read_excel() |> 
+  distinct(ind, name_short)
+
+ta <- here("..", "..", "MRIO Processing", "data", "ta.parquet") |> 
+  read_parquet() |>
+  filter(t == year & s == select & breakdown == "es") |> 
   mutate(
-    DAVAX = DAVAX1 + DAVAX2,
-    REX = REX1 + REX2 + REX3,
-    REF = REF1 + REF2,
-    PDC = PDC1 + PDC2
-  ) %>% 
-  left_join(sectors) %>% 
-  select(s, i, sector, Exports, DAVAX, REX, REF, FVA, PDC) %>% 
-  group_by(s, i, sector) %>% 
-  summarize(across(Exports:PDC, sum)) %>% 
-  ungroup()
+    davax = davax1 + davax2,
+    rex = rex1 + rex2 + rex3,
+    ref = ref1 + ref2,
+    pdc = pdc1 + pdc2
+  ) |> 
+  left_join(sectors, by = c("i" = "ind")) |> 
+  select(sector = name_short, exports, davax, rex, ref, fva, pdc) |> 
+  summarize(across(exports:pdc, sum), .by = sector)
 
-df_agg <- df %>% 
-  summarize(across(Exports:PDC, sum)) %>% 
-  mutate(s = select, i = 0, sector = "Aggregate")
+ta |> add_row(
+    ta |> summarize(across(exports:pdc, sum)) |> mutate(sector = "Aggregate"),
+    .before = 1
+  ) |> 
+  arrange(davax / exports) |> 
+  write_csv(here("data", "final", str_glue("{filename}.csv")))
 
-df <- df %>% 
-  bind_rows(df_agg)
+# Plot --------------------------------------------------------------------
 
-write_csv(df, here("data", "final", "3.5_sector_decomp.csv"))
+df <- here("data", "final", str_glue("{filename}.csv")) |> 
+  read_csv() |> 
+  mutate(
+    na = ifelse(exports == 0, 1, 0),
+    face = case_when(sector == "Aggregate" ~ "bold", .default = "plain")
+  ) |> 
+  arrange(-davax / exports) |> 
+  arrange(desc(na))
 
-# PLOT ----
+df_plot <- df |> 
+  pivot_longer(cols = davax:na, names_to = "category")
 
-dfplot <- df %>% 
-  mutate(na = ifelse(Exports == 0, 1, 0)) %>% 
-  arrange(desc(DAVAX / Exports)) %>% 
-  arrange(desc(na)) %>% 
-  mutate(sector = factor(sector, levels = sector))
-
-aggpos <- which(dfplot$sector == "Aggregate")
-
-bold <- rep("plain", nrow(dfplot))
-bold[aggpos] <- "bold"
-
-dfplot <- dfplot %>% 
-  pivot_longer(cols = DAVAX:na, names_to = "category") %>% 
-  mutate(category = factor(
-    category, 
-    levels = rev(c("DAVAX", "REX", "REF", "FVA", "PDC",  "na"))
-  ))
-
-e <- .34
-
-plot <- ggplot(dfplot, aes(x = value, y = sector, fill = category)) + 
+plot <- ggplot(df_plot, aes(
+    x = value, 
+    y = factor(sector, levels = df$sector), 
+    fill = factor(category, levels = rev(colnames(df)[3:8]))
+  )) + 
   geom_bar(stat = "identity", position = "fill", width = .7) +
-  geom_rect(
-    aes(xmin = 0, xmax = 1, ymin = aggpos - e, ymax = aggpos + e),
-    data = dfplot[1, ], 
-    fill = NA, 
-    color = "black"
-  ) + 
-  
-  geom_vline(xintercept = .25, size = .25, color = "gray25", linetype = "dashed") + 
-  geom_vline(xintercept = .5, size = .25, color = "gray25", linetype = "dashed") + 
-  geom_vline(xintercept = .75, size = .25, color = "gray25", linetype = "dashed") + 
-  
   scale_fill_manual(
     labels = rev(c("DAVAX", "REX", "REF", "FVA", "PDC", "")),
     values = rev(c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B", "gray75"))
   ) + 
-  scale_x_continuous(
-    breaks = c(.25, .5, .75),
-    labels = function(x) paste0(100 * x, "%")
-  ) + 
-  guides(
-    fill = guide_legend(
+  scale_x_continuous(breaks = c(.25, .5, .75), labels = function(x) str_c(100 * x, "%")) + 
+  guides(fill = guide_legend(
       reverse = TRUE, nrow = 1,
       override.aes = list(fill = c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B", "white")))
   ) + 
-  
   theme(
     plot.margin = margin(15, 2, 12, 2),
     axis.title = element_blank(),
     axis.ticks = element_blank(),
     axis.text.x = element_text(size = 9),
-    axis.text.y = element_text(
-      size = 7.5, margin = margin(0, -12, 0, 0), face = bold, color = "black"
-    ),
+    axis.text.y = element_text(size = 7.5, margin = margin(r = -12), face = df$face, color = "black"),
     legend.title = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
@@ -116,13 +87,18 @@ plot <- ggplot(dfplot, aes(x = value, y = sector, fill = category)) +
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.major = element_blank()
-  )
+  ) + 
+  
+  # Add rectangle indicating Aggregate and grid lines
+  geom_rect(
+    aes(xmin = 0, xmax = 1, ymin = which(df$sector == "Aggregate") - .34, ymax = which(df$sector == "Aggregate") + .34),
+    df_plot |> slice(1), fill = NA, color = "black"
+  ) + 
+  geom_vline(xintercept = .25, size = .25, color = "gray25", linetype = "dashed") + 
+  geom_vline(xintercept = .5, size = .25, color = "gray25", linetype = "dashed") + 
+  geom_vline(xintercept = .75, size = .25, color = "gray25", linetype = "dashed")
 
 ggsave(
-  here("figures", "3.5_sector_decomp.pdf"),
-  plot,
-  device = cairo_pdf,
-  width = 16, height = 17, unit = "cm"
+  here("figures", str_glue("{filename}.pdf")),
+  device = cairo_pdf, width = 16, height = 17, unit = "cm"
 )
-
-######### END #########
