@@ -15,7 +15,6 @@ select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |>
   filter(name == "Kazakhstan") |> 
   pull(mrio)
 
-
 # Data --------------------------------------------------------------------
 
 here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
@@ -36,7 +35,6 @@ here("..", "..", "MRIO Processing", "data", "ta62.parquet") |>
   select(t, exports, davax1, davax:ref, fva, pdc) |> 
   write_csv(here("data", "final", str_glue("{filename}.csv")))
 
-
 # Plot --------------------------------------------------------------------
 
 df <- here("data", "final", str_glue("{filename}.csv")) |> 
@@ -45,10 +43,7 @@ df <- here("data", "final", str_glue("{filename}.csv")) |>
 df_plot <- df |> select(-exports, -davax1) |> 
   add_row(t = 2001) |> 
   pivot_longer(cols = -t, names_to = "category") |>
-  mutate(
-    category = factor(category, levels = colnames(df)[-1:-3] |> rev()),
-    t = factor(t, levels = c(df$t, 2001) |> sort())
-  )
+  mutate(category = factor(category, levels = rev(colnames(df)[-1:-3])))
 
 # Box production-based GVC
 
@@ -60,26 +55,11 @@ box <- df |> select(t, exports, davax1) |>
   )
 
 plot <- ggplot() + 
-  
   geom_bar(
-    aes(x = t, y = value / 1000, fill = category),
+    aes(x = factor(t), y = value / 1000, fill = category),
     df_plot, stat = "identity", position = "stack", width = .7
   ) +
-  geom_rect(
-    aes(ymin = min, ymax = max, xmin = x - .34, xmax = x + .34),
-    box, fill = NA, color = "black"
-  ) +
   geom_hline(yintercept = 0, size = .25, color = "gray25") + 
-  
-  annotate(
-    "text", label = "Production-based\nGVCs", 
-    x = 13, y = 90, size = 3, hjust = .5, color = "gray25"
-  ) + 
-  geom_segment(
-    data = df_plot |> slice(1),
-    x = 11.45, xend = 10.35, y = 90, yend = 83, linewidth = .5, color = "gray25"
-  ) + 
-  
   scale_x_discrete(labels = c(2000, "", 2007, "08", "09", 10:22)) +
   scale_y_continuous(name = "$ billion", limits = c(0, 105)) +
   scale_fill_manual(
@@ -87,7 +67,6 @@ plot <- ggplot() +
     values = rev(c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B"))
   ) + 
   guides(fill = guide_legend(reverse = TRUE)) + 
-  
   theme(
     plot.margin = margin(13, 2, 10, 2),
     axis.title.x = element_blank(),
@@ -105,11 +84,23 @@ plot <- ggplot() +
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray75", size = .25, linetype = "dashed")
+  ) + 
+  
+  # Add boxes representing production-based GVCs
+  geom_rect(
+    aes(ymin = min, ymax = max, xmin = x - .34, xmax = x + .34),
+    box, fill = NA, color = "black"
+  ) +
+  annotate(
+    "text", label = "Production-based\nGVCs", 
+    x = 13, y = 90, size = 3, hjust = .5, color = "gray25"
+  ) + 
+  geom_segment(
+    data = df_plot |> slice(1),
+    x = 11.45, xend = 10.35, y = 90, yend = 83, linewidth = .5, color = "gray25"
   )
 
 ggsave(
   here("figures", str_glue("{filename}.pdf")),
-  plot,
-  device = cairo_pdf,
-  width = 16, height = 10, unit = "cm"
+  device = cairo_pdf, width = 16, height = 10, unit = "cm"
 )
