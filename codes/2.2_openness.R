@@ -10,6 +10,7 @@ library(tidyverse)
 library(ggrepel)
 
 filename <- "2.2_openness"
+
 year <- 2021
 
 highlight <- c(
@@ -23,7 +24,6 @@ highlight <- c(
     "United Kingdom",
     "New Zealand"
   )
-
 
 # Data --------------------------------------------------------------------
 
@@ -71,12 +71,12 @@ kaz_adj <- WDI(
   ) |> 
   select(name, trade_sh, gdp)
 
-df <- wb |> bind_rows(kaz_adj) |> arrange(name) |> drop_na(c(trade_sh, gdp))
-
-df |> write_csv(here("data", "final", str_glue("{filename}.csv")))
-
+wb |> bind_rows(kaz_adj) |> arrange(name) |> drop_na(c(trade_sh, gdp)) |> 
+  write_csv(here("data", "final", str_glue("{filename}.csv")))
 
 # Plot --------------------------------------------------------------------
+
+df <- here("data", "final", str_glue("{filename}.csv")) |> read_csv()
 
 df_highlight <- df |> filter(name %in% highlight)
 df_select_1 <- df |> filter(name == "Kazakhstan")
@@ -137,22 +137,18 @@ plot <- ggplot() +
     label = function(x) str_c(2 ^ x, "%")
   ) +
   theme(
-    plot.margin = margin(10, 2, 15, 2),
-    axis.title.x = element_text(size = 9, margin = margin(5, 0, 0, 0)),
-    axis.title.y = element_text(size = 9, margin = margin(0, 5, 0, 0)),
-    axis.ticks = element_blank(),
+    axis.title.x = element_text(size = 9, margin = margin(t = 5)),
+    axis.title.y = element_text(size = 9, margin = margin(r = 5)),
     axis.text = element_text(size = 8),
+    axis.ticks = element_blank(),
     legend.position = "none",
     panel.background = element_blank(),
     panel.border = element_rect(fill = NA, color = "gray20", linewidth = .5),
-    panel.grid.major = element_line(color = "gray75", linewidth = .25, linetype = "dashed")
+    panel.grid.major = element_line(color = "gray75", linewidth = .25, linetype = "dashed"),
+    plot.margin = margin(10, 2, 15, 2)
   )
 
 ggsave(
-  here("figures", "2.2_openness.pdf"),
-  plot,
-  device = cairo_pdf,
-  width = 16, height = 10, unit = "cm"
+  here("figures", str_glue("{filename}.pdf")),
+  device = cairo_pdf, width = 16, height = 10, unit = "cm"
 )
-
-######### END #########
