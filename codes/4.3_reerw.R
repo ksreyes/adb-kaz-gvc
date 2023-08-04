@@ -1,351 +1,212 @@
 # REER WEIGHTS
 
-# SET UP ----
+# Setup -------------------------------------------------------------------
 
 rm(list = ls())
 library(here)
 library(arrow)
+library(readxl)
 library(tidyverse)
 
-sectors <- here("..", "..", "mrio-processing", "data", "raw", "sectors.xlsx") %>% 
-  read_excel() %>% 
-  group_by(ind, name_short) %>%
-  distinct(ind) %>%
-  ungroup() %>% 
-  bind_rows(tibble(ind = 0, name_short = "Aggregate"))
-
-focusnames <- c("Mining", "Metals")
-focus <- sectors %>% filter(name_short %in% focusnames) %>% pull(ind)
-
-countries <- here("..", "..", "mrio-processing", "data", "raw", "countries.xlsx") %>% 
-  read_excel() %>%
-  filter(!(is.na(mrio))) %>% 
-  mutate(s = mrio) %>% 
-  arrange(s) %>%
-  select(s, name, region) %>% 
-  mutate(
-    region = replace(region, region == "Latin America and the Caribbean", "Rest of the world"),
-    region = replace(region, region == "Middle East and North Africa", "Rest of the world"),
-    region = replace(region, name == "Mexico", "North America"),
-    region = replace(region, name == "Rest of the world", "Rest of the world")
-  )
-
-select <- countries %>% filter(name == "Kazakhstan") %>% pull(s)
-
-years72 <- 2017:2022
-years62 <- 2007:2016
-G <- 73
-G62 <- 63
+filename <- "4.3_reerw"
+select <- "Kazakhstan"
+display <- c("Mining", "Metals")
 N <- 35
 
-# LOAD DATA ----
+sectors <- here("..", "..", "MRIO Processing", "dicts", "sectors.xlsx") |> 
+  read_excel() |> 
+  distinct(ind, name_short) |> 
+  rename(i = ind, sector = name_short)
 
-norm <- function(vector, s) {
-  vector1 <- -vector[-s] / sum(vector[-s])
-  c(vector1[1:(s - 1)], -sum(vector1), vector1[s:length(vector1)])
+countries <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
+  read_excel() |>
+  mutate(region = case_when(
+    str_detect(region, "America") ~ "Americas",
+    str_detect(region, "Middle East") ~ "Rest of the world",
+    is.na(region) ~ "Rest of the world",
+    .default = region
+  )) |> 
+  drop_na(mrio) |> 
+  select(mrio, mrio62, name, region)
+
+select_ind <- countries |> filter(name == "Kazakhstan") |> pull(mrio)
+display_ind <- sectors |> filter(sector %in% display) |> pull(i)
+
+# Data --------------------------------------------------------------------
+
+reshape_matrix <- function(matrix, G, select_ind, display_ind) {
+  
+  # Reshapes weights matrix into long format and retains only the rows
+  # corresponding to select_ind and display_ind
+  
+  tlen <- as.integer(nrow(matrix) / (G * N))
+  selectlen <- length(select_ind) * length(display_ind)
+  
+  matrix |>
+    mutate(s = rep(1:G, each = N) |> rep(tlen), i = rep(1:N, G) |> rep(tlen)) |>
+    filter(s == select_ind & i %in% display_ind) |> 
+    pivot_longer(cols = -c(t, s, i), names_to = "rj", values_to = "weight") |>
+    mutate(r = rep(1:G, each = N) |> rep(selectlen * tlen)) |>
+    summarise(weight = sum(weight), .by = c(t, s, i, r)) |>
+    filter(r != select_ind) |>
+    mutate(weight = weight / sum(weight), .by = c(t, s, i)) |>
+    select(t, s, i, r, weight)
 }
 
-w_A <- w_B <- w62_A <- w62_B <- tibble()
+reduce_groups <- function(
+    df, factor, value, group, show = 2, by = "mean", 
+    subgroup = NULL, always_agg = NULL
+  ) {
+  
+  # Reduce number of countries to display in chart by taking the top 2 within
+  # each region and aggregating the rest under "Others"
+  
+  if (by == "mean") { 
+    tags <- df |> group_by({{ group }}, {{ subgroup }}) |> 
+      summarise("{{ value }}" := mean({{ value }})) 
+  }
+  else { 
+    tags <- df |> filter({{ factor }} == by) |> 
+      group_by({{ group }})
+  }
+  
+  tags <- tags |>
+      arrange(desc(weight), .by_group = TRUE) |>
+      mutate(rank = 1:n(), n = n())
 
-for (year in years72) {
+  if (missing(subgroup)) {
+    tags <- mutate(tags, reduced_group = case_when(
+        {{ group }} %in% always_agg ~ {{ group }},
+        (n == show + 1) & (rank > show) ~ {{ group }},
+        rank <= show ~ {{ group }},
+        .default = "Others"
+      ))
+  } else {
+    tags <- mutate(tags, reduced_group = case_when(
+        {{ group }} %in% always_agg ~ {{ group }},
+        (n == show + 1) & (rank > show) ~ {{ subgroup }},
+        rank <= show ~ {{ subgroup }},
+        .default = str_c("Other ", {{ group }})
+      ))
+  }
   
-  w_t <- here("..", "..", "mrio-processing", "data", "reer", "reer-weights-sector.parquet") %>% 
-    read_parquet() %>% 
-    filter(t == year) %>% 
-    select(-t)
-  
-  # Mining
-  slice <- tibble(s = rep(1:G, each = N), i = rep(1:N, G), w_t) %>% 
-    filter(s == select & i == focus[1])
-  
-  w_A <- rbind(
-      w_A,
-      tibble(
-        i = focusnames[1],
-        t = year,
-        s = rep(1:G, each = N), 
-        j = rep(1:N, G),
-        w_big = as.numeric(slice[, -(1:2)])
-      ) %>% 
-      group_by(i, t, s) %>% 
-      summarize(w1 = sum(w_big)) %>% 
-      ungroup() %>% 
-      mutate(w = norm(w1, select)) %>% 
-      select(i, t, s, w)
-    )
-  
-  # Metals
-  slice <- tibble(s = rep(1:G, each = N), i = rep(1:N, G), w_t) %>% 
-    filter(s == select & i == focus[2])
-  
-  w_B <- rbind(
-      w_B,
-      tibble(
-        i = focusnames[2],
-        t = year,
-        s = rep(1:G, each = N), 
-        j = rep(1:N, G),
-        w_big = as.numeric(slice[, -(1:2)])
-      ) %>% 
-      group_by(i, t, s) %>% 
-      summarize(w1 = sum(w_big)) %>% 
-      ungroup() %>% 
-      mutate(w = norm(w1, select)) %>% 
-      select(i, t, s, w)
-    )
+  tags <- select(tags, {{ subgroup }}, {{ group }}, reduced_group)
+
+  df |> left_join(tags) |>
+    select({{ factor }}, {{ subgroup }}, {{ group }}, reduced_group, {{ value }}) |>
+    mutate(reduced_group = fct(reduced_group, levels = unique(tags$reduced_group))) |> 
+    group_by({{ factor }}, reduced_group) |> 
+    summarise("{{ value }}" := sum({{ value }})) |> 
+    arrange(reduced_group, .by_group = TRUE)
 }
 
-for (year in years62) {
-  
-  w62_t <- here("..", "..", "mrio-processing", "data", "reer", "reer62-weights-sector.parquet") %>% 
-    read_parquet() %>% 
-    filter(t == year) %>% 
-    select(-t)
-  
-  # Mining
-  slice <- tibble(s = rep(c(1:(G62-1), 73), each = N), i = rep(1:N, G62), w62_t) %>% 
-    filter(s == select & i == focus[1])
-  
-  w62_A <- rbind(
-    w62_A,
-    tibble(
-      i = focusnames[1],
-      t = year,
-      s = rep(c(1:(G62-1), 73), each = N), 
-      j = rep(1:N, G62),
-      w_big = as.numeric(slice[, -(1:2)])
-    ) %>% 
-      group_by(i, t, s) %>% 
-      summarize(w1 = sum(w_big)) %>% 
-      ungroup() %>% 
-      mutate(w = norm(w1, select)) %>% 
-      select(i, t, s, w)
+df <- here("..", "..", "MRIO Processing", "data", "reer", "reer62-weights-sector.parquet") |> 
+  read_parquet() |> 
+  reshape_matrix(G = 63, select_ind, display_ind) |> 
+  filter(t < 2017) |> 
+  left_join(countries, by = c("r" = "mrio62")) |> 
+  bind_rows(
+    here("..", "..", "MRIO Processing", "data", "reer", "reer-weights-sector.parquet") |> 
+      read_parquet() |> 
+      reshape_matrix(G = 73, select_ind, display_ind) |> 
+      left_join(countries, by = c("r" = "mrio"))
+  ) |> 
+  select(i, t, region, name, weight)
+
+df |> filter(i == display_ind[1]) |>   
+  reduce_groups(
+    factor = t, 
+    value = weight, 
+    group = region, 
+    subgroup = name, 
+    always_agg = c("South Asia", "Rest of the world")
+  ) |> 
+  mutate(
+    country = select, 
+    sector = display[1], 
+    competitor = fct_relevel(reduced_group, "Rest of the world", after = Inf)
+  ) |> 
+  group_by(t) |>
+  arrange(competitor, .by_group = TRUE) |> 
+  pivot_wider(names_from = t, values_from = weight) |> 
+  select(country, sector, competitor, starts_with("20")) |> 
+  write_csv(here("data", "final", str_glue("{filename}_a.csv")))
+
+df |> filter(i == display_ind[2]) |>   
+  reduce_groups(
+    factor = t, 
+    value = weight, 
+    group = region, 
+    subgroup = name, 
+    always_agg = c("South Asia", "Rest of the world")
+  ) |> 
+  mutate(
+    country = select, 
+    sector = display[2], 
+    competitor = fct_relevel(reduced_group, "Rest of the world", after = Inf)) |> 
+  group_by(t) |> 
+  arrange(competitor, .by_group = TRUE) |> 
+  pivot_wider(names_from = t, values_from = weight) |> 
+  select(country, sector, competitor, starts_with("20")) |> 
+  write_csv(here("data", "final", str_glue("{filename}_b.csv")))
+
+# Plot --------------------------------------------------------------------
+
+hline <- geom_hline(
+    yintercept = c(.25, .75), 
+    size = .25, color = "gray35", linetype = "dashed"
   )
-  
-  # Metals
-  slice <- tibble(s = rep(c(1:(G62-1), 73), each = N), i = rep(1:N, G62), w62_t) %>% 
-    filter(s == select & i == focus[2])
-  
-  w62_B <- rbind(
-    w62_B,
-    tibble(
-      i = focusnames[2],
-      t = year,
-      s = rep(c(1:(G62-1), 73), each = N), 
-      j = rep(1:N, G62),
-      w_big = as.numeric(slice[, -(1:2)])
-    ) %>% 
-      group_by(i, t, s) %>% 
-      summarize(w1 = sum(w_big)) %>% 
-      ungroup() %>% 
-      mutate(w = norm(w1, select)) %>% 
-      select(i, t, s, w)
+xscale <- scale_x_discrete(labels = c(2000, "", "07", "08", "09", 10:22))
+yscale <- scale_y_continuous(
+    breaks = c(.25, .75), 
+    labels = function(x) str_c(100 * x, "%")
   )
-}
-
-df_A <- bind_rows(w62_A, w_A) %>% 
-  left_join(countries) %>% 
-  pivot_wider(names_from = t, values_from = w)
-
-df_B <- bind_rows(w62_B, w_B) %>% 
-  left_join(countries) %>% 
-  pivot_wider(names_from = t, values_from = w)
-
-write_csv(df_A, here("data", "final", "4.3a_reerw.csv"))
-write_csv(df_B, here("data", "final", "4.3b_reerw.csv"))
-
-# PLOT ----
-
-segment <- function(df) {
-  
-  df <- df %>% filter(s != select) %>% select(!s)
-  df <- df %>% replace(is.na(.), 0)
-  
-  # East Asia and Pacific
-  
-  df_eap <- df %>% 
-    filter(region == "East Asia and Pacific") %>% 
-    arrange(across(last_col()))
-  
-  resid_eap <- colSums(df_eap[, -(1:3)]) - colSums(df_eap[1:2, -(1:3)])
-  
-  df_eap <- df_eap %>% 
-    slice(1:2) %>% 
-    pivot_longer(cols = !(i:region), names_to = "t", values_to = "w") %>% 
-    bind_rows(tibble(
-      i = df$i[1],
-      name = "Other East Asia and Pacific",
-      region = "East Asia and Pacific",
-      t = as.character(c(years62, years72)),
-      w = resid_eap
-    )) %>% 
-    pivot_wider(names_from = t, values_from = w)
-  
-  # Europe and Central Asia
-  
-  df_eca <- df %>% 
-    filter(region == "Europe and Central Asia") %>% 
-    arrange(across(last_col()))
-  
-  resid_eca <- colSums(df_eca[, -(1:3)]) - colSums(df_eca[1:2, -(1:3)])
-  
-  df_eca <- df_eca %>% 
-    slice(1:2) %>% 
-    pivot_longer(cols = !(i:region), names_to = "t", values_to = "w") %>% 
-    bind_rows(tibble(
-      i = df$i[1],
-      name = "Other Europe and Central Asia",
-      region = "Europe and Central Asia",
-      t = as.character(c(years62, years72)),
-      w = resid_eca
-    )) %>% 
-    pivot_wider(names_from = t, values_from = w)
-  
-  # North America
-  
-  df_na <- df %>% 
-    filter(region == "North America") %>% 
-    arrange(across(last_col()))
-  
-  resid_na <- colSums(df_na[, -(1:3)]) - colSums(df_na[1, -(1:3)])
-  
-  df_na <- df_na %>% 
-    slice(1) %>% 
-    pivot_longer(cols = !(i:region), names_to = "t", values_to = "w") %>% 
-    bind_rows(tibble(
-      i = df$i[1],
-      name = "Other North America",
-      region = "North America",
-      t = as.character(c(years62, years72)),
-      w = resid_na
-    )) %>% 
-    pivot_wider(names_from = t, values_from = w)
-  
-  # South Asia
-  
-  df_sa <- df %>% filter(region == "South Asia")
-  total_sa <- colSums(df_sa[, -(1:3)])
-  
-  df_sa <- bind_rows(tibble(
-      i = df$i[1],
-      name = "South Asia",
-      region = "South Asia",
-      t = as.character(c(years62, years72)),
-      w = total_sa
-    )) %>% 
-    pivot_wider(names_from = t, values_from = w)
-  
-  # Combine
-  
-  df_all <- bind_rows(df_eap, df_eca, df_na, df_sa)
-  order <- c(df_all$name, "Rest of the world")
-  
-  resid_all <- colSums(df[, -(1:3)]) - colSums(df_all[, -(1:3)])
-  
-  df_all <- df_all %>% 
-    pivot_longer(cols = !(i:region), names_to = "t", values_to = "w") %>% 
-    bind_rows(tibble(
-      i = df$i[1],
-      name = "Rest of the world",
-      region = "Rest of the world",
-      t = as.character(c(years62, years72)),
-      w = resid_all
-    )) %>% 
-    mutate(name = factor(name, levels = order), w = -w)
-  
-  return(df_all)
-}
-
-# .... Mining ----
-
-dfplot_A <- segment(df_A) %>% 
-  mutate(t = factor(t, levels = c(years62, years72)))
-
-plot_A <- ggplot(dfplot_A, aes(x = t, y = w, fill = name)) + 
-  geom_hline(yintercept = .25, size = .25, color = "gray35", linetype = "dashed") + 
-  geom_hline(yintercept = .75, size = .25, color = "gray35", linetype = "dashed") + 
-  geom_rect(
-    data = dfplot_A[1, ],
-    xmin = 11, xmax = Inf, ymin = 0, ymax = 1, fill = "white"
-  ) + 
-  geom_bar(stat = "identity", position = "stack", width = .7) +
-  
-  scale_fill_manual(values = c(
+colors <- scale_fill_manual(values = c(
     "#007db7", "#00A5D2", "#63CCEC", 
+    "#FDB415", "#FCD379", "#FFE4A8",
     "#6BB305", "#8DC63F", "#B4DE7A",
-    "#E9532B", "#E88468", "#FDB415", 
-    "gray75"
-  )) + 
-  scale_x_discrete(labels = c(2007, "08", "09", 10:22)) +
-  scale_y_continuous(breaks = c(.25, .75), labels = function(x) paste0(100 * x, "%")) +
-  theme(
-    plot.margin = margin(5, 2, 15, 2),
+    "#E9532B", "gray75"
+  ))
+theme <- theme(
     axis.title = element_blank(),
-    axis.ticks = element_blank(),
-    axis.text.x = element_text(size = 9, margin = margin(-8, 0, 0, 0)),
+    axis.text.x = element_text(size = 9, margin = margin(t = -8)),
     axis.text.y = element_text(size = 9),
-    legend.title = element_blank(),
-    legend.text = element_text(size = 8),
+    axis.ticks = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
-    legend.position = "right",
-    legend.box.margin = margin(0, 0, 0, -7),
-    panel.background = element_blank(),
-    panel.border = element_blank(),
-    panel.grid = element_blank()
-  )
-
-ggsave(
-  here("figures", "4.3a_reerw.pdf"),
-  plot_A,
-  device = cairo_pdf,
-  width = 16, height = 9, unit = "cm"
-)
-
-# .... Metals ----
-
-dfplot_B <- segment(df_B) %>% 
-  mutate(t = factor(t, levels = c(years62, years72)))
-
-plot_B <- ggplot(dfplot_B, aes(x = t, y = w, fill = name)) + 
-  geom_hline(yintercept = .25, size = .25, color = "gray35", linetype = "dashed") + 
-  geom_hline(yintercept = .75, size = .25, color = "gray35", linetype = "dashed") + 
-  geom_rect(
-    data = dfplot_B[1, ],
-    xmin = 11, xmax = Inf, ymin = 0, ymax = 1, fill = "white"
-  ) + 
-  geom_bar(stat = "identity", position = "stack", width = .7) +
-  
-  scale_fill_manual(values = c(
-    "#007db7", "#00A5D2", "#63CCEC", 
-    "#6BB305", "#8DC63F", "#B4DE7A",
-    "#E9532B", "#E88468", "#FDB415", 
-    "gray75"
-  )) + 
-  scale_x_discrete(labels = c(2007, "08", "09", 10:22)) +
-  scale_y_continuous(breaks = c(.25, .75), labels = function(x) paste0(100 * x, "%")) +
-  theme(
-    plot.margin = margin(5, 2, 15, 2),
-    axis.title = element_blank(),
-    axis.ticks = element_blank(),
-    axis.text.x = element_text(size = 9, margin = margin(-8, 0, 0, 0)),
-    axis.text.y = element_text(size = 9),
-    legend.title = element_blank(),
     legend.text = element_text(size = 8),
-    legend.key = element_blank(),
-    legend.key.size = unit(.75, "lines"),
+    legend.title = element_blank(),
     legend.position = "right",
-    legend.box.margin = margin(0, 0, 0, -7),
+    legend.box.margin = margin(l = -7),
     panel.background = element_blank(),
     panel.border = element_blank(),
-    panel.grid = element_blank()
+    panel.grid = element_blank(),
+    plot.margin = margin(5, 2, 15, 2)
   )
 
+df1 <- here("data", "final", str_glue("{filename}_a.csv")) |> read_csv()
+df2 <- here("data", "final", str_glue("{filename}_b.csv")) |> read_csv()
+
+plot1 <- df1 |> 
+  pivot_longer(cols = starts_with("20"), names_to = "t", values_to = "weight") |> 
+  add_row(t = "2001") |> 
+  ggplot(aes(x = factor(t), y = weight, fill = fct(competitor, levels = df1$competitor))) +
+  hline + xscale + yscale + colors + theme +
+  geom_bar(stat = "identity", position = "stack", width = .7)
+
 ggsave(
-  here("figures", "4.3b_reerw.pdf"),
-  plot_B,
-  device = cairo_pdf,
-  width = 16, height = 9, unit = "cm"
+  here("figures", str_glue("{filename}_a.pdf")),
+  device = cairo_pdf, width = 16, height = 9, unit = "cm"
 )
 
-######### END #########
+plot2 <- df2 |> 
+  pivot_longer(cols = starts_with("20"), names_to = "t", values_to = "weight") |> 
+  add_row(t = "2001") |> 
+  ggplot(aes(x = factor(t), y = weight, fill = fct(competitor, levels = df2$competitor))) +
+  hline + xscale + yscale + colors + theme +
+  geom_bar(stat = "identity", position = "stack", width = .7)
+
+ggsave(
+  here("figures", str_glue("{filename}_b.pdf")),
+  device = cairo_pdf, width = 16, height = 9, unit = "cm"
+)
