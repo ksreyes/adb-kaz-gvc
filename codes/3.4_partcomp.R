@@ -10,22 +10,21 @@ library(tidyverse)
 library(cowplot)
 
 filename <- "3.4_partcomp"
+
 years <- c(2000, 2010, 2022)
 
-party <- c(
-  "Kazakhstan", "Russian Federation", "Uzberkistan", "Kyrgyz Republic",
-  "Saudi Arabia", "Brunei Darussalam", "Turkey", "Mongolia", "Georgia"
-)
+select <- c(
+    "Kazakhstan", "Russian Federation", "Uzberkistan", "Kyrgyz Republic",
+    "Saudi Arabia", "Brunei Darussalam", "Turkey", "Mongolia", "Georgia"
+  )
 
 # Data --------------------------------------------------------------------
 
 countries <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
   read_excel() |>
-  filter(name %in% party) |>
+  filter(name %in% select) |>
   mutate(s = mrio) |> 
-  bind_rows(tibble(s = 0, name = "World")) |> 
-  arrange(s) |>
-  select(s, name)
+  add_row(s = 0, name = "World")
 
 gvcp <- here("..", "..", "MRIO Processing", "data", "gvcp62.parquet") |> 
   read_parquet() |> 
@@ -37,11 +36,9 @@ gvcp <- here("..", "..", "MRIO Processing", "data", "gvcp62.parquet") |>
   ) |> 
   select(-ends_with(c("_b", "_f")))
 
-gvcp |> 
-  filter(s %in% countries$s) |> 
+gvcp |> filter(s %in% countries$s) |> 
   bind_rows(
-    gvcp |> 
-      summarize(across(exports:gvc_prod, sum), .by = t) |> 
+    gvcp |> summarize(across(exports:gvc_prod, sum), .by = t) |> 
       mutate(s = 0, gvcp_trade = gvc_trade / exports, gvcp_prod = gvc_prod / va)
   ) |> 
   left_join(countries) |> 
@@ -53,12 +50,11 @@ gvcp |>
 
 df <- here("data", "final", str_glue("{filename}.csv")) |> read_csv()
 
-highlights <- df |> 
-  filter(t == years[3]) |> 
+highlights <- df |> filter(t == years[3]) |> 
   mutate(
-    face = case_when(name %in% c("World", party[1]) ~ "bold", .default = "plain"),
+    face = case_when(name %in% c("World", select[1]) ~ "bold", .default = "plain"),
     color = case_when(name == "World" ~ "#007db7", .default = "black"),
-    size = case_when(name == party[1] ~ 9, .default = 8),
+    size = case_when(name == select[1] ~ 9, .default = 8),
   )
 
 plot1 <- ggplot(df, aes(x = gvcp_trade, y = fct_reorder2(name, t, gvcp_trade, .desc = FALSE))) + 
@@ -90,7 +86,7 @@ plot2 <- ggplot(df, aes(x = gvcp_prod, fct_reorder2(name, t, gvcp_prod, .desc = 
   geom_hline(yintercept = "World", color = "gray50", size = 5, alpha = .2) + 
   geom_line(color = "#63CCEC", size = 1.5) + 
   geom_point(aes(color = factor(t)), size = 2.5) + 
-  scale_x_continuous(breaks = c(.2, .4, .6), labels = function(x) str_c(100 * x, "%")) + 
+  scale_x_continuous(breaks = c(.2, .4), labels = function(x) str_c(100 * x, "%")) + 
   scale_color_manual("Year", values = c("#007db7", "#00A5D2", "#E9532B")) + 
   guides(color = guide_legend(title = NULL, title.position = "right")) +
   labs(title = "Production-based") + 
