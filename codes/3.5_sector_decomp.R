@@ -54,8 +54,7 @@ df <- here("data", "final", str_glue("{filename}.csv")) |>
   arrange(-davax / exports) |> 
   arrange(desc(na))
 
-df_plot <- df |> 
-  pivot_longer(cols = davax:na, names_to = "category")
+df_plot <- pivot_longer(df, cols = davax:na, names_to = "category")
 
 plot <- ggplot(df_plot, aes(
     x = value, 
@@ -73,20 +72,20 @@ plot <- ggplot(df_plot, aes(
       override.aes = list(fill = c("#007db7", "#00A5D2", "#63CCEC", "#8DC63F", "#E9532B", "white")))
   ) + 
   theme(
-    plot.margin = margin(15, 2, 12, 2),
     axis.title = element_blank(),
-    axis.ticks = element_blank(),
     axis.text.x = element_text(size = 9),
     axis.text.y = element_text(size = 7.5, margin = margin(r = -12), face = df$face, color = "black"),
-    legend.title = element_blank(),
+    axis.ticks = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
-    legend.text = element_text(size = 9, margin = margin(0, 10, 0, 0)),
+    legend.text = element_text(size = 9, margin = margin(r = 10)),
+    legend.title = element_blank(),
     legend.position = "bottom",
     legend.box.margin = margin(-5, 40, 0, 0), 
     panel.background = element_blank(),
     panel.border = element_blank(),
-    panel.grid.major = element_blank()
+    panel.grid.major = element_blank(),
+    plot.margin = margin(15, 2, 12, 2)
   ) + 
   
   # Add rectangle indicating Aggregate and grid lines
@@ -94,9 +93,7 @@ plot <- ggplot(df_plot, aes(
     aes(xmin = 0, xmax = 1, ymin = which(df$sector == "Aggregate") - .34, ymax = which(df$sector == "Aggregate") + .34),
     df_plot |> slice(1), fill = NA, color = "black"
   ) + 
-  geom_vline(xintercept = .25, size = .25, color = "gray25", linetype = "dashed") + 
-  geom_vline(xintercept = .5, size = .25, color = "gray25", linetype = "dashed") + 
-  geom_vline(xintercept = .75, size = .25, color = "gray25", linetype = "dashed")
+  geom_vline(xintercept = c(.25, .5, .75), size = .25, color = "gray25", linetype = "dashed")
 
 ggsave(
   here("figures", str_glue("{filename}.pdf")),
