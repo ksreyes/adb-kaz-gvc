@@ -10,6 +10,8 @@ library(tidyverse)
 
 filename <- "5.3_constant_growth"
 
+display <- c("Aggregate", "Mining", "Metals", "Wholesale trade")
+
 select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
   read_excel() |>
   filter(name == "Kazakhstan") |> 
@@ -17,9 +19,9 @@ select <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |>
 
 sectors <- here("..", "..", "MRIO Processing", "dicts", "sectors.xlsx") |> 
   read_excel() |> 
-  distinct(ind, name_short) |>
-  add_row(ind = 0, name_short = "Aggregate", .before = 1)
-
+  rename(i = ind, sector = name_short) |> 
+  distinct(i, sector) |>
+  add_row(i = 0, sector = "Aggregate")
 
 # Data --------------------------------------------------------------------
 
@@ -53,7 +55,7 @@ preprocess <- function (df, select, label) {
   return(df_all)
 }
 
-df <- here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
+here("..", "..", "MRIO Processing", "data", "ta62.parquet") |> 
   read_parquet() |> 
   preprocess(select, "current") |> 
   left_join(
@@ -61,55 +63,51 @@ df <- here("..", "..", "MRIO Processing", "data", "ta62.parquet") |>
       read_parquet() |> 
       preprocess(select, "constant")
   ) |> 
-  left_join(sectors, by = c("i" = "ind")) |> 
-  mutate(name_short = factor(name_short, levels = sectors |> pull(name_short)))
-
-df |> write_csv(here("data", "final", str_glue("{filename}.csv")))
-
+  left_join(sectors) |> 
+  filter(sector %in% display) |> 
+  select(sector, t, starts_with("current_"), starts_with("constant_")) |> 
+  write_csv(here("data", "final", str_glue("{filename}.csv")))
 
 # Plot --------------------------------------------------------------------
 
-df_plot <- df |>
-  select(t, s, i, name_short, ends_with("_growth")) |> 
-  pivot_longer(cols = current_growth:constant_growth, names_to = "gvc_trade", values_to = "value")
-
-plot <- ggplot(
-    df_plot |> filter(i %in% c(0, 2, 12, 20)), 
-    aes(x = t, y = value, color = gvc_trade)
-  ) + 
+plot <- here("data", "final", str_glue("{filename}.csv")) |> 
+  read_csv() |>
+  select(t, sector, ends_with("_growth")) |> 
+  pivot_longer(
+    cols = current_growth:constant_growth, 
+    names_to = "gvc_trade", 
+    values_to = "value"
+  ) |> 
+  ggplot(aes(x = t, y = value, color = gvc_trade)) + 
   geom_hline(yintercept = 0, size = .5, color = "gray75") + 
   geom_line(size = .75) +
-  facet_wrap(~ name_short) +
+  facet_wrap(~ fct(sector, levels = display)) +
   scale_y_continuous(labels = function(x) str_c(100 * x, "%")) +
   scale_color_manual(
     labels = c("Constant price", "Current price"),
     values = c("#007db7", "#e9532b")
   ) + 
   theme(
-    plot.margin = margin(15, 2, 10, 2),
     axis.title = element_blank(),
-    axis.line = element_blank(),
-    axis.ticks = element_blank(),
     axis.text = element_text(size = 9, color = "black"),
-    legend.title = element_blank(),
+    axis.ticks = element_blank(),
+    axis.line = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
-    legend.text = element_text(size = 9, margin = margin(0, 10, 0, 0)),
-    legend.box.margin = margin(-10, 0, 0, 0), 
+    legend.text = element_text(size = 9, margin = margin(r = 10)),
+    legend.title = element_blank(),
     legend.position = "bottom",
-    strip.background = element_rect(fill = "#007db7"),
-    strip.text = element_text(face = "bold", color = "white"),
+    legend.box.margin = margin(t = -10), 
     panel.background = element_rect(fill = "gray95", color = NA),
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank()
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(15, 2, 10, 2),
+    strip.background = element_rect(fill = "#007db7"),
+    strip.text = element_text(face = "bold", color = "white")
   )
 
 ggsave(
   here("figures", str_glue("{filename}.pdf")),
-  plot,
-  device = cairo_pdf,
-  width = 16, height = 13, unit = "cm"
+  device = cairo_pdf, width = 16, height = 12, unit = "cm"
 )
-
-######### END #########
