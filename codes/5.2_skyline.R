@@ -8,11 +8,9 @@ library(tidyverse)
 
 filename <- "5.2_skyline"
 
+# Plot --------------------------------------------------------------------
 
-# Data --------------------------------------------------------------------
-
-df <- here("data", "interim", "skyline.csv") |> 
-  read_csv()
+df <- here("data", "final", str_glue("{filename}.csv")) |> read_csv()
 
 N <- nrow(df)
 x <- df |> pull(x)
@@ -28,17 +26,13 @@ left <- c(0, right[-N])
 height1 <- x / sf
 height2 <- (sm + x) / sf
 mid <- (left + right) / 2
-label <- df |> pull(abv)
-label[which(width < .015)] <- ""
+label <- case_when(width < .015 ~ "", .default = df$abv)
 
-df <- tibble(i = df |> pull(abv), width, left, right, height1, height2, mid, label)
+df <- tibble(i = df$abv, width, left, right, height1, height2, mid, label)
 
 pos_primary <- right[2] / 2
 pos_manuf <- (right[2] + right[18]) / 2
 pos_services <- (right[18] + right[35]) / 2
-
-
-# Plot --------------------------------------------------------------------
 
 plot <- ggplot(df) + 
   
@@ -85,11 +79,10 @@ plot <- ggplot(df) +
     label = "Services"
   ) +
   
-  # Style
   scale_y_continuous(
     limits = c(-.3, 4),
     breaks = seq(0, 5, .5),
-    labels = function(x) paste0(100 * x, "%")
+    labels = function(x) str_c(100 * x, "%")
   ) + 
   scale_fill_manual(
     values = c("#00A5D2", "#F57F29"),
@@ -97,28 +90,24 @@ plot <- ggplot(df) +
   ) + 
   guides(fill = guide_legend(override.aes = list(linetype = "blank"))) + 
   theme(
-    plot.margin = margin(15, 2, 10, 2),
     axis.title = element_blank(),
-    axis.ticks = element_blank(),
     axis.text.x = element_blank(),
     axis.text.y = element_text(size = 8),
-    legend.title = element_blank(),
+    axis.ticks = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.75, "lines"),
-    legend.text = element_text(size = 9, margin = margin(0, 10, 0, 0)),
-    legend.box.margin = margin(-10, 0, 0, 0), 
+    legend.text = element_text(size = 9, margin = margin(r = 10)),
+    legend.title = element_blank(),
     legend.position = "bottom",
+    legend.box.margin = margin(t = -10), 
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray75", linewidth = .25, linetype = "dashed")
+    panel.grid.major.y = element_line(color = "gray75", linewidth = .25, linetype = "dashed"),
+    plot.margin = margin(15, 2, 10, 2),
   )
 
 ggsave(
   here("figures", str_glue("{filename}.pdf")),
-  plot,
-  device = cairo_pdf,
-  width = 16, height = 10, unit = "cm"
+  device = cairo_pdf, width = 16, height = 10, unit = "cm"
 )
-
-######### END #########
