@@ -18,13 +18,10 @@ select2 <- c("PRC", "Japan", "United States", "Germany", "Kazakhstan")
 
 sectors <- here("..", "..", "MRIO Processing", "dicts", "sectors.xlsx") |> 
   read_excel() |> 
-  distinct(ind, name_short) |>
-  rename(i = ind, sector = name_short)
+  distinct(ind, name_short)
 
 countries <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
   read_excel() |>
-  filter(!(is.na(mrio))) |> 
-  rename(s = mrio) |> 
   mutate(name = replace(name, name == "People's Republic of China", "PRC"))
 
 # Data --------------------------------------------------------------------
@@ -41,36 +38,61 @@ lengths <- here("..", "..", "MRIO Processing", "data", "lengths62.parquet") |>
 
 lengths |> 
   filter(
-    s %in% subset(countries, name %in% select1)$s & 
-      i == subset(sectors, sector == display[1])$i
+    s %in% subset(countries, name %in% select1)$mrio & 
+      i == subset(sectors, name_short == display[1])$ind
   ) |> 
   bind_rows(
     lengths |> 
       filter(
-        s %in% subset(countries, name %in% select2)$s & 
-          i == subset(sectors, sector == display[2])$i
+        s %in% subset(countries, name %in% select2)$mrio & 
+          i == subset(sectors, name_short == display[2])$ind
   )) |> 
-  left_join(countries) |> 
-  left_join(sectors) |> 
-  select(sector, name, t, PLv_GVC, PLy_GVC) |> 
+  left_join(countries, by = c("s" = "mrio")) |> 
+  left_join(sectors, by = c("i" = "ind")) |> 
+  select(sector = name_short, name, t, PLv_GVC, PLy_GVC) |> 
   write_csv(here("data", "final", str_glue("{filename}.csv")))
 
 # Plot --------------------------------------------------------------------
 
 df <- here("data", "final", str_glue("{filename}.csv")) |> read_csv()
 
-points <- function(df, display, country, u) {
+# Helper functions
+
+points <- function(df, display, country, nudge) {
   df <- subset(df, sector == display & name == country)
-  x <- df$PLy_GVC[1] + u
-  y <- df$PLv_GVC[1] + u
-  xend <- df$PLy_GVC[2] + u
-  yend <- df$PLv_GVC[2] + u
+  x <- df$PLy_GVC[1] + nudge
+  y <- df$PLv_GVC[1] + nudge
+  xend <- df$PLy_GVC[2] + nudge
+  yend <- df$PLv_GVC[2] + nudge
   return(c(x, y, xend, yend))
+}
+
+draw_arrow <- function(display, country, x_nudge, y_nudge, xend_nudge, yend_nudge) {
+  geom_segment(
+    x = points(df, display, country, x_nudge)[1], 
+    y = points(df, display, country, y_nudge)[2], 
+    xend = points(df, display, country, xend_nudge)[3], 
+    yend = points(df, display, country, yend_nudge)[4],
+    lineend = "butt", linejoin = "mitre", linewidth = .5, colour = "black",
+    arrow = arrow(length = unit(.1, "cm"), type = "closed")
+  )
+}
+
+add_label <- function(
+    year, display, country, nudge_x, nudge_y, 
+    hjust = .5, vjust = .5, size = 2.5, color = "black", face = "plain"
+  ) {
+  geom_text(
+    mapping = aes(x = PLy_GVC, y = PLv_GVC, label = name), 
+    data = subset(df, t == year & sector == display & name == country),
+    nudge_x = nudge_x, nudge_y = nudge_y, hjust = hjust, vjust = vjust, 
+    size = size, color = color, fontface = face
+  )
 }
 
 # Display sector 1
 
-plot1 <- df |> filter(sector == display[1]) |> 
+plot1 <- filter(df, sector == display[1]) |> 
   ggplot(aes(x = PLy_GVC, y = PLv_GVC, color = factor(t))) + 
   geom_abline(size = .35, color = "gray60") + 
   annotate(
@@ -88,61 +110,28 @@ plot1 <- df |> filter(sector == display[1]) |>
   scale_y_continuous(limits = c(3.5, 4.75)) +
   guides(color = guide_legend(nrow = 1, override.aes = list(size = 3, alpha = 1))) + 
   theme(
-    plot.margin = margin(14, 2, 2, 5),
     plot.title = element_text(size = 9, hjust = .5, face = "bold"),
     axis.title = element_blank(),
-    axis.ticks = element_blank(),
     axis.text = element_text(size = 8),
+    axis.ticks = element_blank(),
     legend.position = "none",
     panel.background = element_rect(fill = "gray95", color = NA),
+    panel.border = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.border = element_blank()
+    plot.margin = margin(14, 2, 2, 5)
   ) +
   
   # Russian Federation
-  geom_segment(
-    x = points(df, display[1], select1[1], .01)[1], 
-    y = points(df, display[1], select1[1], .055)[2], 
-    xend = points(df, display[1], select1[1], -.01)[3], 
-    yend = points(df, display[1], select1[1], -.055)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, colour = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[1] & name == select1[1]),
-    nudge_x = .16, nudge_y = -.06, hjust = 1, vjust = 1, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[1], select1[1], .01, .055, -.01, -.055) +
+  add_label(years[1], display[1], select1[1], .16, -.06, 1, 1) +
   
   # Brunei Darussalam
-  geom_segment(
-    x = points(df, display[1], select1[2], .05)[1], 
-    y = points(df, display[1], select1[2], -.015)[2], 
-    xend = points(df, display[1], select1[2], -.05)[3], 
-    yend = points(df, display[1], select1[2], .015)[4],
-    lineend = "butt", linewidth = .5, linejoin = "mitre", colour = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[1] & name == select1[2]), 
-    nudge_x = .04, nudge_y = -.04, hjust = 1, vjust = 1, size = 2.5, color = "black",
-  ) +
+  draw_arrow(display[1], select1[2], .05, -.015, -.05, .015) +
+  add_label(years[1], display[1], select1[2], .04, -.04, 1, 1) +
 
   # Norway
-  geom_segment(
-    x = points(df, display[1], select1[3], -.02)[1], 
-    y = points(df, display[1], select1[3], .02)[2], 
-    xend = points(df, display[1], select1[3], .02)[3], 
-    yend = points(df, display[1], select1[3], -.02)[4] ,
-    lineend = "butt", linejoin = "mitre", linewidth = .5, colour = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[1] & name == select1[3]),
-    nudge_x = .06, nudge_y = 0, hjust = 0, vjust = .5, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[1], select1[3], -.02, .02, .02, -.02) +
+  add_label(years[1], display[1], select1[3], .06, 0, 0, .5) +
   
   # United States
   geom_curve(
@@ -153,26 +142,11 @@ plot1 <- df |> filter(sector == display[1]) |>
     lineend = "butt", linewidth = .5, curvature = -.5, colour = "black",
     arrow = arrow(length = unit(.1, "cm"), type = "closed")
   ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[2] & sector == display[1] & name == select1[4]),
-    nudge_x = .04, nudge_y = .04, hjust = 0, vjust = 0, size = 2.5, color = "black"
-  ) +
+  add_label(years[2], display[1], select1[4], .04, .04, 0, 0) +
   
   # Kazakhstan
-  geom_segment(
-    x = points(df, display[1], select1[5], .05)[1], 
-    y = points(df, display[1], select1[5], -.005)[2], 
-    xend = points(df, display[1], select1[5], -.05)[3], 
-    yend = points(df, display[1], select1[5], .005)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, color = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[1] & name == select1[5]),
-    nudge_x = .1, nudge_y = -.06, hjust = 1, vjust = 1, size = 2.5, color = "black", fontface = "bold",
-  )
+  draw_arrow(display[1], select1[5], .05, -.005, -.05, .005) +
+  add_label(years[1], display[1], select1[5], .1, -.06, 1, 1, face = "bold")
   
 # Display sector 2
 
@@ -197,101 +171,46 @@ plot2 <- df |> filter(sector == display[2]) |>
     override.aes = list(size = 3, alpha = 1))
   ) + 
   theme(
-    plot.margin = margin(14, 2, 2, 5),
-    plot.title = element_text(size = 9, hjust = .5, face = "bold"),
     axis.title = element_blank(),
-    axis.ticks = element_blank(),
     axis.text = element_text(size = 8),
     legend.box.background = element_rect(
       fill = "white", color = "gray75", linewidth = .25
     ),
-    legend.title = element_text(size = 0),
-    legend.text = element_text(size = 8, color = "gray50", margin = margin(0, 5, 0, 3)),
+    axis.ticks = element_blank(),
+    legend.background = element_blank(),
     legend.key = element_blank(),
     legend.key.size = unit(.65, "lines"),
-    legend.background = element_blank(),
-    legend.justification = c(0, 0),
+    legend.text = element_text(size = 8, color = "gray50", margin = margin(0, 5, 0, 3)),
+    legend.title = element_text(size = 0),
     legend.position = c(.05, .85),
+    legend.justification = c(0, 0),
     panel.background = element_rect(fill = "gray95", color = NA),
+    panel.border = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.border = element_blank()
+    plot.title = element_text(size = 9, hjust = .5, face = "bold"),
+    plot.margin = margin(14, 2, 2, 5)
   ) +
   
   # PRC
-  geom_segment(
-    x = points(df, display[2], select2[1], -.004)[1], 
-    y = points(df, display[2], select2[1], -.028)[2], 
-    xend = points(df, display[2], select2[1], .004)[3], 
-    yend = points(df, display[2], select2[1], .028)[4] ,
-    lineend = "butt", linejoin = "mitre", linewidth = .5, colour = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[2] & name == select2[1]),
-    nudge_x = -.06, nudge_y = 0, hjust = 1, vjust = .5, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[2], select2[1], -.004, -.028, .004, .028) +
+  add_label(years[1], display[2], select2[1], -.06, 0, 1, .5) +
   
   # Japan
-  geom_segment(
-    x = points(df, display[2], select2[2], -.015)[1], 
-    y = points(df, display[2], select2[2], -.05)[2], 
-    xend = points(df, display[2], select2[2], .015)[3], 
-    yend = points(df, display[2], select2[2], .05)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, color = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[2] & name == select2[2]),
-    nudge_x = -.06, nudge_y = 0, hjust = 1, vjust = .5, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[2], select2[2], -.015, -.05, .015, .05) +
+  add_label(years[1], display[2], select2[2], -.06, 0, 1, .5) +
   
   # United States
-  geom_segment(
-    x = points(df, display[2], select2[3], .03)[1], 
-    y = points(df, display[2], select2[3], -.01)[2], 
-    xend = points(df, display[2], select2[3], -.03)[3], 
-    yend = points(df, display[2], select2[3], .01)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, colour = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[2] & name == select2[3]),
-    nudge_x = -.06, nudge_y = .06, hjust = .5, vjust = 0, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[2], select2[3], .03, -.01, -.03, .01) +
+  add_label(years[1], display[2], select2[3], -.06, .06, .5, 0) +
   
   # Germany
-  geom_segment(
-    x = points(df, display[2], select2[4], -.03)[1], 
-    y = points(df, display[2], select2[4], -.022)[2], 
-    xend = points(df, display[2], select2[4], .026)[3], 
-    yend = points(df, display[2], select2[4], .022)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, color = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[2] & name == select2[4]),
-    nudge_x = .04, nudge_y = -.04, hjust = 0, vjust = 1, size = 2.5, color = "black"
-  ) +
+  draw_arrow(display[2], select2[4], -.03, -.022, .026, .022) +
+  add_label(years[1], display[2], select2[4], .04, -.04, 0, 1) +
   
   # Kazakhstan
-  geom_segment(
-    x = points(df, display[2], select2[5], -.045)[1], 
-    y = points(df, display[2], select2[5], -.015)[2], 
-    xend = points(df, display[2], select2[5], .05)[3], 
-    yend = points(df, display[2], select2[5], .015)[4],
-    lineend = "butt", linejoin = "mitre", linewidth = .5, color = "black",
-    arrow = arrow(length = unit(.1, "cm"), type = "closed")
-  ) + 
-  geom_text(
-    aes(x = PLy_GVC, y = PLv_GVC, label = name), 
-    subset(df, t == years[1] & sector == display[2] & name == select2[5]),
-    nudge_x = -.02, nudge_y = -.06, hjust = 0, vjust = 1, size = 2.5, color = "black", fontface = "bold",
-  )
-
+  draw_arrow(display[2], select2[5], -.045, -.015, .05, .015) +
+  add_label(years[1], display[2], select2[5], -.02, -.06, 0, 1, face = "bold")
+  
 # Consolidate
 
 xlab <- ggdraw() + draw_label("Forward GVC length", angle = 90, size = 9)
