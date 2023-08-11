@@ -27,4 +27,4 @@ In principle, everything needed to replicate a chart is found in its csv file, w
 
 ## Disclaimer
 
-The contents of this repository are intended as a personal project with no official affiliation with the Asian Development Bank or the ADB publication in question.
+The contents of this repository are intended as a personal project. These have no official affiliation with the Asian Development Bank nor the ADB publication in question.
