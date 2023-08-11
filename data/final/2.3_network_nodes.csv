@@ -1,226 +1,226 @@
-id,iso_num,code,name,region,links
-1,4,AFG,Afghanistan,South Asia,0
-2,8,ALB,Albania,Europe and Central Asia,0
-3,12,DZA,Algeria,Middle East and North Africa,0
-4,16,ASM,American Samoa,East Asia and Pacific,1
-5,20,AND,Andorra,Europe and Central Asia,0
-6,24,AGO,Angola,Sub-Saharan Africa,2
-7,28,ATG,Antigua and Barbuda,Latin America and the Caribbean,0
-8,31,AZE,Azerbaijan,Europe and Central Asia,1
-9,32,ARG,Argentina,Latin America and the Caribbean,3
-10,36,AUS,Australia,East Asia and Pacific,5
-11,40,AUT,Austria,Europe and Central Asia,1
-12,44,BHS,Bahamas,Latin America and the Caribbean,0
-13,48,BHR,Bahrain,Middle East and North Africa,0
-14,50,BAN,Bangladesh,South Asia,1
-15,51,ARM,Armenia,Europe and Central Asia,1
-16,52,BRB,Barbados,Latin America and the Caribbean,1
-17,56,BEL,Belgium,Europe and Central Asia,10
-18,60,BMU,Bermuda,North America,1
-19,64,BHU,Bhutan,South Asia,0
-20,68,BOL,Bolivia (Plurinational State of),Latin America and the Caribbean,0
-21,70,BIH,Bosnia and Herzegovina,Europe and Central Asia,1
-22,72,BWA,Botswana,Sub-Saharan Africa,0
-23,76,BRA,Brazil,Latin America and the Caribbean,8
-24,84,BLZ,Belize,Latin America and the Caribbean,0
-25,86,IOT,British Indian Ocean Territory,South Asia,0
-26,90,SOL,Solomon Islands,East Asia and Pacific,0
-27,92,VGB,Virgin Islands (British),Latin America and the Caribbean,0
-28,96,BRU,Brunei Darussalam,East Asia and Pacific,0
-29,100,BGR,Bulgaria,Europe and Central Asia,1
-30,104,MYA,Myanmar,East Asia and Pacific,0
-31,108,BDI,Burundi,Sub-Saharan Africa,0
-32,112,BLR,Belarus,Europe and Central Asia,0
-33,116,CAM,Cambodia,East Asia and Pacific,1
-34,120,CMR,Cameroon,Sub-Saharan Africa,1
-35,124,CAN,Canada,North America,9
-36,132,CPV,Cabo Verde,Sub-Saharan Africa,0
-37,136,CYM,Cayman Islands,Latin America and the Caribbean,1
-38,140,CAF,Central African Republic,Sub-Saharan Africa,0
-39,144,SRI,Sri Lanka,South Asia,1
-40,148,TCD,Chad,Sub-Saharan Africa,0
-41,152,CHL,Chile,Latin America and the Caribbean,2
-42,156,PRC,People's Republic of China,East Asia and Pacific,84
-43,162,CXR,Christmas Island,East Asia and Pacific,0
-44,166,CCK,Cocos (Keeling) Islands,East Asia and Pacific,0
-45,170,COL,Colombia,Latin America and the Caribbean,1
-46,174,COM,Comoros,Sub-Saharan Africa,0
-47,178,COG,Congo,Sub-Saharan Africa,0
-48,180,COD,"Congo, Democratic Republic of the",Sub-Saharan Africa,2
-49,184,COO,Cook Islands,East Asia and Pacific,0
-50,188,CRI,Costa Rica,Latin America and the Caribbean,1
-51,191,HRV,Croatia,Europe and Central Asia,2
-52,192,CUB,Cuba,Latin America and the Caribbean,0
-53,196,CYP,Cyprus,Europe and Central Asia,3
-54,203,CZE,Czech Republic,Europe and Central Asia,3
-55,204,BEN,Benin,Sub-Saharan Africa,0
-56,208,DEN,Denmark,Europe and Central Asia,4
-57,212,DMA,Dominica,Latin America and the Caribbean,0
-58,214,DOM,Dominican Republic,Latin America and the Caribbean,0
-59,218,ECU,Ecuador,Latin America and the Caribbean,0
-60,222,SLV,El Salvador,Latin America and the Caribbean,3
-61,226,GNQ,Equatorial Guinea,Sub-Saharan Africa,0
-62,231,ETH,Ethiopia,Sub-Saharan Africa,1
-63,232,ERI,Eritrea,Sub-Saharan Africa,0
-64,233,EST,Estonia,Europe and Central Asia,1
-65,238,FLK,Falkland Islands (Malvinas),Latin America and the Caribbean,0
-66,242,FIJ,Fiji,East Asia and Pacific,0
-67,246,FIN,Finland,Europe and Central Asia,1
-68,251,FRA,France,Europe and Central Asia,28
-69,258,PYF,French Polynesia,East Asia and Pacific,0
-70,260,ATF,French Southern Territories,Sub-Saharan Africa,0
-71,262,DJI,Djibouti,Middle East and North Africa,0
-72,266,GAB,Gabon,Sub-Saharan Africa,0
-73,268,GEO,Georgia,Europe and Central Asia,1
-74,270,GMB,Gambia,Sub-Saharan Africa,0
-75,275,PSE,"Palestine, State of",Middle East and North Africa,1
-76,276,GER,Germany,Europe and Central Asia,47
-77,288,GHA,Ghana,Sub-Saharan Africa,0
-78,292,GIB,Gibraltar,Europe and Central Asia,1
-79,296,KIR,Kiribati,East Asia and Pacific,0
-80,300,GRC,Greece,Europe and Central Asia,8
-81,304,GRL,Greenland,Europe and Central Asia,0
-82,308,GRD,Grenada,Latin America and the Caribbean,0
-83,316,GUM,Guam,East Asia and Pacific,0
-84,320,GTM,Guatemala,Latin America and the Caribbean,5
-85,324,GIN,Guinea,Sub-Saharan Africa,0
-86,328,GUY,Guyana,Latin America and the Caribbean,2
-87,332,HTI,Haiti,Latin America and the Caribbean,1
-88,340,HND,Honduras,Latin America and the Caribbean,2
-89,344,HKG,"Hong Kong, China",East Asia and Pacific,6
-90,348,HUN,Hungary,Europe and Central Asia,1
-91,352,ISL,Iceland,Europe and Central Asia,1
-92,360,INO,Indonesia,East Asia and Pacific,2
-93,364,IRN,Iran (Islamic Republic of),Middle East and North Africa,0
-94,368,IRQ,Iraq,Middle East and North Africa,0
-95,372,IRE,Ireland,Europe and Central Asia,3
-96,376,ISR,Israel,Middle East and North Africa,1
-97,380,ITA,Italy,Europe and Central Asia,20
-98,384,CIV,Côte d'Ivoire,Sub-Saharan Africa,0
-99,388,JAM,Jamaica,Latin America and the Caribbean,2
-100,392,JPN,Japan,East Asia and Pacific,20
-101,398,KAZ,Kazakhstan,Europe and Central Asia,2
-102,400,JOR,Jordan,Middle East and North Africa,1
-103,404,KEN,Kenya,Sub-Saharan Africa,3
-104,408,PRK,Korea (Democratic People's Republic of),East Asia and Pacific,0
-105,410,KOR,Republic of Korea,East Asia and Pacific,15
-106,414,KUW,Kuwait,Middle East and North Africa,0
-107,417,KGZ,Kyrgyz Republic,Europe and Central Asia,0
-108,418,LAO,Lao People's Democratic Republic,East Asia and Pacific,0
-109,422,LBN,Lebanon,Middle East and North Africa,4
-110,426,LSO,Lesotho,Sub-Saharan Africa,0
-111,428,LVA,Latvia,Europe and Central Asia,2
-112,430,LBR,Liberia,Sub-Saharan Africa,0
-113,434,LBY,Libya,Middle East and North Africa,0
-114,440,LTU,Lithuania,Europe and Central Asia,1
-115,442,LUX,Luxembourg,Europe and Central Asia,0
-116,446,MAC,Macao,East Asia and Pacific,0
-117,450,MDG,Madagascar,Sub-Saharan Africa,0
-118,454,MWI,Malawi,Sub-Saharan Africa,0
-119,458,MAL,Malaysia,East Asia and Pacific,2
-120,462,MLD,Maldives,South Asia,0
-121,466,MLI,Mali,Sub-Saharan Africa,2
-122,470,MLT,Malta,Middle East and North Africa,0
-123,478,MRT,Mauritania,Sub-Saharan Africa,1
-124,480,MUS,Mauritius,Sub-Saharan Africa,0
-125,484,MEX,Mexico,Latin America and the Caribbean,3
-126,490,TAP,"Other Asia, not elsewhere specified",East Asia and Pacific,5
-127,496,MON,Mongolia,East Asia and Pacific,0
-128,498,MDA,"Moldova, Republic of",Europe and Central Asia,0
-129,499,MNE,Montenegro,Europe and Central Asia,0
-130,500,MSR,Montserrat,Latin America and the Caribbean,0
-131,504,MAR,Morocco,Middle East and North Africa,1
-132,508,MOZ,Mozambique,Sub-Saharan Africa,0
-133,512,OMN,Oman,Middle East and North Africa,2
-134,516,NAM,Namibia,Sub-Saharan Africa,0
-135,520,NAU,Nauru,East Asia and Pacific,0
-136,524,NEP,Nepal,South Asia,1
-137,528,NET,Netherlands,Europe and Central Asia,14
-138,531,CUW,Curaçao,Latin America and the Caribbean,0
-139,533,ABW,Aruba,Latin America and the Caribbean,0
-140,534,SXM,Sint Maarten (Dutch part),Latin America and the Caribbean,0
-141,535,BES,"Bonaire, Sint Eustatius and Saba",Latin America and the Caribbean,0
-142,540,NCL,New Caledonia,East Asia and Pacific,0
-143,548,VAN,Vanuatu,East Asia and Pacific,0
-144,554,NZL,New Zealand,East Asia and Pacific,3
-145,558,NIC,Nicaragua,Latin America and the Caribbean,0
-146,562,NER,Niger,Sub-Saharan Africa,0
-147,566,NGA,Nigeria,Sub-Saharan Africa,2
-148,570,NIU,Niue,East Asia and Pacific,0
-149,574,NFK,Norfolk Island,East Asia and Pacific,0
-150,580,MNP,Northern Mariana Islands,East Asia and Pacific,0
-151,583,FSM,Federated States of Micronesia,East Asia and Pacific,0
-152,584,RMI,Marshall Islands,East Asia and Pacific,1
-153,585,PAL,Palau,East Asia and Pacific,0
-154,586,PAK,Pakistan,South Asia,4
-155,591,PAN,Panama,Latin America and the Caribbean,2
-156,598,PNG,Papua New Guinea,East Asia and Pacific,0
-157,600,PRY,Paraguay,Latin America and the Caribbean,0
-158,604,PER,Peru,Latin America and the Caribbean,1
-159,608,PHI,Philippines,East Asia and Pacific,5
-160,612,PCN,Pitcairn,East Asia and Pacific,0
-161,616,POL,Poland,Europe and Central Asia,9
-162,620,POR,Portugal,Europe and Central Asia,3
-163,624,GNB,Guinea-Bissau,Sub-Saharan Africa,0
-164,626,TIM,Timor-Leste,East Asia and Pacific,0
-165,634,QAT,Qatar,Middle East and North Africa,0
-166,642,ROM,Romania,Europe and Central Asia,4
-167,643,RUS,Russian Federation,Europe and Central Asia,8
-168,646,RWA,Rwanda,Sub-Saharan Africa,0
-169,652,BLM,Saint Barthélemy,Latin America and the Caribbean,0
-170,654,SHN,"Saint Helena, Ascension and Tristan da Cunha",Sub-Saharan Africa,0
-171,659,KNA,Saint Kitts and Nevis,Latin America and the Caribbean,0
-172,660,AIA,Anguilla,Latin America and the Caribbean,0
-173,662,LCA,Saint Lucia,Latin America and the Caribbean,0
-174,666,SPM,Saint Pierre and Miquelon,North America,0
-175,670,VCT,Saint Vincent and the Grenadines,Latin America and the Caribbean,1
-176,674,SMR,San Marino,Europe and Central Asia,0
-177,678,STP,Sao Tome and Principe,Sub-Saharan Africa,0
-178,682,SAU,Saudi Arabia,Middle East and North Africa,10
-179,686,SEN,Senegal,Sub-Saharan Africa,1
-180,688,SRB,Serbia,Europe and Central Asia,2
-181,690,SYC,Seychelles,Sub-Saharan Africa,0
-182,694,SLE,Sierra Leone,Sub-Saharan Africa,0
-183,699,IND,India,South Asia,36
-184,702,SIN,Singapore,East Asia and Pacific,13
-185,703,SVK,Slovak Republic,Europe and Central Asia,1
-186,704,VIE,Viet Nam,East Asia and Pacific,4
-187,705,SVN,Slovenia,Europe and Central Asia,1
-188,706,SOM,Somalia,Sub-Saharan Africa,1
-189,710,ZAF,South Africa,Sub-Saharan Africa,8
-190,716,ZWE,Zimbabwe,Sub-Saharan Africa,1
-191,724,SPA,Spain,Europe and Central Asia,16
-192,728,SSD,South Sudan,Sub-Saharan Africa,0
-193,729,SDN,Sudan,Sub-Saharan Africa,0
-194,740,SUR,Suriname,Latin America and the Caribbean,1
-195,748,SWZ,Eswatini,Sub-Saharan Africa,0
-196,752,SWE,Sweden,Europe and Central Asia,5
-197,757,SWI,Switzerland,Europe and Central Asia,15
-198,760,SYR,Syrian Arab Republic,Middle East and North Africa,0
-199,762,TAJ,Tajikistan,Europe and Central Asia,0
-200,764,THA,Thailand,East Asia and Pacific,12
-201,768,TGO,Togo,Sub-Saharan Africa,0
-202,772,TKL,Tokelau,East Asia and Pacific,0
-203,776,TON,Tonga,East Asia and Pacific,0
-204,780,TTO,Trinidad and Tobago,Latin America and the Caribbean,0
-205,784,UAE,United Arab Emirates,Middle East and North Africa,30
-206,788,TUN,Tunisia,Middle East and North Africa,0
-207,792,TUR,Turkey,Europe and Central Asia,11
-208,795,TKM,Turkmenistan,Europe and Central Asia,0
-209,796,TCA,Turks and Caicos Islands,Latin America and the Caribbean,0
-210,798,TUV,Tuvalu,East Asia and Pacific,0
-211,800,UGA,Uganda,Sub-Saharan Africa,1
-212,804,UKR,Ukraine,Europe and Central Asia,1
-213,807,MKD,North Macedonia,Europe and Central Asia,0
-214,818,EGY,Egypt,Middle East and North Africa,0
-215,826,UKG,United Kingdom,Europe and Central Asia,9
-216,834,TZA,"Tanzania, United Republic of",Sub-Saharan Africa,0
-217,842,USA,United States,North America,86
-218,854,BFA,Burkina Faso,Sub-Saharan Africa,0
-219,858,URY,Uruguay,Latin America and the Caribbean,0
-220,860,UZB,Uzbekistan,Europe and Central Asia,1
-221,862,VEN,Venezuela (Bolivarian Republic of),Latin America and the Caribbean,0
-222,876,WLF,Wallis and Futuna,East Asia and Pacific,0
-223,882,SAM,Samoa,East Asia and Pacific,0
-224,887,YEM,Yemen,Middle East and North Africa,0
-225,894,SCG,Zambia,Sub-Saharan Africa,0
+baci_num,code,name,region,links
+478,MRT,Mauritania,Sub-Saharan Africa,1
+480,MUS,Mauritius,Sub-Saharan Africa,0
+484,MEX,Mexico,Latin America and the Caribbean,3
+490,TAP,"Taipei,China",East Asia and Pacific,5
+496,MON,Mongolia,East Asia and Pacific,0
+498,MDA,"Moldova, Republic of",Europe and Central Asia,0
+499,MNE,Montenegro,Europe and Central Asia,0
+500,MSR,Montserrat,Latin America and the Caribbean,0
+504,MAR,Morocco,Middle East and North Africa,1
+508,MOZ,Mozambique,Sub-Saharan Africa,0
+512,OMN,Oman,Middle East and North Africa,2
+516,NAM,Namibia,Sub-Saharan Africa,0
+520,NAU,Nauru,East Asia and Pacific,0
+524,NEP,Nepal,South Asia,1
+528,NET,Netherlands,Europe and Central Asia,14
+531,CUW,Curaçao,Latin America and the Caribbean,0
+533,ABW,Aruba,Latin America and the Caribbean,0
+534,SXM,Sint Maarten (Dutch part),Latin America and the Caribbean,0
+535,BES,"Bonaire, Sint Eustatius and Saba",Latin America and the Caribbean,0
+540,NCL,New Caledonia,East Asia and Pacific,0
+548,VAN,Vanuatu,East Asia and Pacific,0
+554,NZL,New Zealand,East Asia and Pacific,3
+558,NIC,Nicaragua,Latin America and the Caribbean,0
+562,NER,Niger,Sub-Saharan Africa,0
+566,NGA,Nigeria,Sub-Saharan Africa,2
+579,NOR,Norway,Europe and Central Asia,0
+580,MNP,Northern Mariana Islands,East Asia and Pacific,0
+583,FSM,Federated States of Micronesia,East Asia and Pacific,0
+584,RMI,Marshall Islands,East Asia and Pacific,1
+585,PAL,Palau,East Asia and Pacific,0
+586,PAK,Pakistan,South Asia,4
+591,PAN,Panama,Latin America and the Caribbean,2
+598,PNG,Papua New Guinea,East Asia and Pacific,0
+600,PRY,Paraguay,Latin America and the Caribbean,0
+604,PER,Peru,Latin America and the Caribbean,1
+608,PHI,Philippines,East Asia and Pacific,5
+612,PCN,Pitcairn,East Asia and Pacific,0
+616,POL,Poland,Europe and Central Asia,9
+620,POR,Portugal,Europe and Central Asia,3
+624,GNB,Guinea-Bissau,Sub-Saharan Africa,0
+626,TIM,Timor-Leste,East Asia and Pacific,0
+634,QAT,Qatar,Middle East and North Africa,0
+642,ROM,Romania,Europe and Central Asia,4
+643,RUS,Russian Federation,Europe and Central Asia,8
+646,RWA,Rwanda,Sub-Saharan Africa,0
+652,BLM,Saint Barthélemy,East Asia and Pacific,0
+654,SHN,"Saint Helena, Ascension and Tristan da Cunha",Sub-Saharan Africa,0
+659,KNA,Saint Kitts and Nevis,Latin America and the Caribbean,0
+660,AIA,Anguilla,Latin America and the Caribbean,0
+662,LCA,Saint Lucia,Latin America and the Caribbean,0
+666,SPM,Saint Pierre and Miquelon,Latin America and the Caribbean,0
+670,VCT,Saint Vincent and the Grenadines,Latin America and the Caribbean,1
+674,SMR,San Marino,Europe and Central Asia,0
+678,STP,Sao Tome and Principe,Sub-Saharan Africa,0
+682,SAU,Saudi Arabia,Middle East and North Africa,10
+686,SEN,Senegal,Sub-Saharan Africa,1
+688,SRB,Serbia,Europe and Central Asia,2
+690,SYC,Seychelles,Sub-Saharan Africa,0
+694,SLE,Sierra Leone,Sub-Saharan Africa,0
+699,IND,India,South Asia,36
+702,SIN,Singapore,East Asia and Pacific,13
+703,SVK,Slovak Republic,Europe and Central Asia,1
+704,VIE,Viet Nam,East Asia and Pacific,4
+705,SVN,Slovenia,Europe and Central Asia,1
+706,SOM,Somalia,Sub-Saharan Africa,1
+710,ZAF,South Africa,Sub-Saharan Africa,8
+716,ZWE,Zimbabwe,Sub-Saharan Africa,1
+724,SPA,Spain,Europe and Central Asia,16
+728,SSD,South Sudan,Sub-Saharan Africa,0
+729,SDN,Sudan,Sub-Saharan Africa,0
+740,SUR,Suriname,Latin America and the Caribbean,1
+748,SWZ,Eswatini,Sub-Saharan Africa,0
+752,SWE,Sweden,Europe and Central Asia,5
+757,SWI,Switzerland,Europe and Central Asia,15
+760,SYR,Syrian Arab Republic,Middle East and North Africa,0
+762,TAJ,Tajikistan,Europe and Central Asia,0
+764,THA,Thailand,East Asia and Pacific,12
+768,TGO,Togo,Sub-Saharan Africa,0
+772,TKL,Tokelau,East Asia and Pacific,0
+776,TON,Tonga,East Asia and Pacific,0
+780,TTO,Trinidad and Tobago,Latin America and the Caribbean,0
+784,UAE,United Arab Emirates,Middle East and North Africa,30
+788,TUN,Tunisia,Middle East and North Africa,0
+792,TUR,Turkey,Europe and Central Asia,11
+795,TKM,Turkmenistan,Europe and Central Asia,0
+796,TCA,Turks and Caicos Islands,Latin America and the Caribbean,0
+798,TUV,Tuvalu,East Asia and Pacific,0
+800,UGA,Uganda,Sub-Saharan Africa,1
+804,UKR,Ukraine,Europe and Central Asia,1
+807,MKD,North Macedonia,Europe and Central Asia,0
+818,EGY,Egypt,Middle East and North Africa,0
+826,UKG,United Kingdom,Europe and Central Asia,9
+834,TZA,"Tanzania, United Republic of",Sub-Saharan Africa,0
+842,USA,United States,North America,86
+854,BFA,Burkina Faso,Sub-Saharan Africa,0
+858,URY,Uruguay,Latin America and the Caribbean,0
+860,UZB,Uzbekistan,Europe and Central Asia,1
+862,VEN,Venezuela (Bolivarian Republic of),Latin America and the Caribbean,0
+876,WLF,Wallis and Futuna,East Asia and Pacific,0
+882,SAM,Samoa,East Asia and Pacific,0
+887,YEM,Yemen,Middle East and North Africa,0
+894,ZMB,Zambia,Sub-Saharan Africa,0
+574,NFK,Norfolk Island,East Asia and Pacific,0
+570,NIU,Niue,East Asia and Pacific,0
+454,MWI,Malawi,Sub-Saharan Africa,0
+458,MAL,Malaysia,East Asia and Pacific,2
+462,MLD,Maldives,South Asia,0
+466,MLI,Mali,Sub-Saharan Africa,2
+470,MLT,Malta,Europe and Central Asia,0
+4,AFG,Afghanistan,South Asia,0
+8,ALB,Albania,Europe and Central Asia,0
+12,DZA,Algeria,Middle East and North Africa,0
+16,ASM,American Samoa,East Asia and Pacific,1
+20,AND,Andorra,Europe and Central Asia,0
+24,AGO,Angola,Sub-Saharan Africa,2
+28,ATG,Antigua and Barbuda,Latin America and the Caribbean,0
+31,AZE,Azerbaijan,Europe and Central Asia,1
+32,ARG,Argentina,Latin America and the Caribbean,3
+36,AUS,Australia,East Asia and Pacific,5
+40,AUT,Austria,Europe and Central Asia,1
+44,BHS,Bahamas,Latin America and the Caribbean,0
+48,BHR,Bahrain,Middle East and North Africa,0
+50,BAN,Bangladesh,South Asia,1
+51,ARM,Armenia,Europe and Central Asia,1
+52,BRB,Barbados,Latin America and the Caribbean,1
+56,BEL,Belgium,Europe and Central Asia,10
+60,BMU,Bermuda,North America,1
+64,BHU,Bhutan,South Asia,0
+68,BOL,Bolivia (Plurinational State of),Latin America and the Caribbean,0
+70,BIH,Bosnia and Herzegovina,Europe and Central Asia,1
+72,BWA,Botswana,Sub-Saharan Africa,0
+76,BRA,Brazil,Latin America and the Caribbean,8
+84,BLZ,Belize,Latin America and the Caribbean,0
+86,IOT,British Indian Ocean Territory,East Asia and Pacific,0
+90,SOL,Solomon Islands,East Asia and Pacific,0
+92,VGB,Virgin Islands (British),Latin America and the Caribbean,0
+96,BRU,Brunei Darussalam,East Asia and Pacific,0
+100,BGR,Bulgaria,Europe and Central Asia,1
+104,MYA,Myanmar,East Asia and Pacific,0
+108,BDI,Burundi,Sub-Saharan Africa,0
+112,BLR,Belarus,Europe and Central Asia,0
+116,CAM,Cambodia,East Asia and Pacific,1
+120,CMR,Cameroon,Sub-Saharan Africa,1
+124,CAN,Canada,North America,9
+132,CPV,Cabo Verde,Sub-Saharan Africa,0
+136,CYM,Cayman Islands,Latin America and the Caribbean,1
+140,CAF,Central African Republic,Sub-Saharan Africa,0
+144,SRI,Sri Lanka,South Asia,1
+148,TCD,Chad,Sub-Saharan Africa,0
+152,CHL,Chile,Latin America and the Caribbean,2
+156,PRC,People's Republic of China,East Asia and Pacific,84
+162,CXR,Christmas Island,East Asia and Pacific,0
+166,CCK,Cocos (Keeling) Islands,East Asia and Pacific,0
+170,COL,Colombia,Latin America and the Caribbean,1
+174,COM,Comoros,Sub-Saharan Africa,0
+178,COG,Congo,Sub-Saharan Africa,0
+180,COD,"Congo, Democratic Republic of the",Sub-Saharan Africa,2
+184,COO,Cook Islands,East Asia and Pacific,0
+188,CRI,Costa Rica,Latin America and the Caribbean,1
+191,HRV,Croatia,Europe and Central Asia,2
+192,CUB,Cuba,Latin America and the Caribbean,0
+196,CYP,Cyprus,Europe and Central Asia,3
+203,CZE,Czech Republic,Europe and Central Asia,3
+204,BEN,Benin,Sub-Saharan Africa,0
+208,DEN,Denmark,Europe and Central Asia,4
+212,DMA,Dominica,Latin America and the Caribbean,0
+214,DOM,Dominican Republic,Latin America and the Caribbean,0
+218,ECU,Ecuador,Latin America and the Caribbean,0
+222,SLV,El Salvador,Latin America and the Caribbean,3
+226,GNQ,Equatorial Guinea,Sub-Saharan Africa,0
+231,ETH,Ethiopia,Sub-Saharan Africa,1
+232,ERI,Eritrea,Sub-Saharan Africa,0
+233,EST,Estonia,Europe and Central Asia,1
+238,FLK,Falkland Islands (Malvinas),Latin America and the Caribbean,0
+242,FIJ,Fiji,East Asia and Pacific,0
+246,FIN,Finland,Europe and Central Asia,1
+251,FRA,France,Europe and Central Asia,28
+258,PYF,French Polynesia,East Asia and Pacific,0
+262,DJI,Djibouti,Middle East and North Africa,0
+266,GAB,Gabon,Sub-Saharan Africa,0
+268,GEO,Georgia,Europe and Central Asia,1
+270,GMB,Gambia,Sub-Saharan Africa,0
+275,PSE,"Palestine, State of",Middle East and North Africa,1
+276,GER,Germany,Europe and Central Asia,47
+288,GHA,Ghana,Sub-Saharan Africa,0
+292,GIB,Gibraltar,Europe and Central Asia,1
+296,KIR,Kiribati,East Asia and Pacific,0
+300,GRC,Greece,Europe and Central Asia,8
+304,GRL,Greenland,Europe and Central Asia,0
+308,GRD,Grenada,Latin America and the Caribbean,0
+316,GUM,Guam,East Asia and Pacific,0
+320,GTM,Guatemala,Latin America and the Caribbean,5
+324,GIN,Guinea,Sub-Saharan Africa,0
+328,GUY,Guyana,Latin America and the Caribbean,2
+332,HTI,Haiti,Latin America and the Caribbean,1
+340,HND,Honduras,Latin America and the Caribbean,2
+344,HKG,"Hong Kong, China",East Asia and Pacific,6
+348,HUN,Hungary,Europe and Central Asia,1
+352,ISL,Iceland,Europe and Central Asia,1
+360,INO,Indonesia,East Asia and Pacific,2
+364,IRN,Iran (Islamic Republic of),Middle East and North Africa,0
+368,IRQ,Iraq,Middle East and North Africa,0
+372,IRE,Ireland,Europe and Central Asia,3
+376,ISR,Israel,Middle East and North Africa,1
+380,ITA,Italy,Europe and Central Asia,20
+384,CIV,Côte d'Ivoire,Sub-Saharan Africa,0
+388,JAM,Jamaica,Latin America and the Caribbean,2
+392,JPN,Japan,East Asia and Pacific,20
+398,KAZ,Kazakhstan,Europe and Central Asia,2
+400,JOR,Jordan,Middle East and North Africa,1
+404,KEN,Kenya,Sub-Saharan Africa,3
+408,PRK,Korea (Democratic People's Republic of),East Asia and Pacific,0
+410,KOR,Republic of Korea,East Asia and Pacific,15
+414,KUW,Kuwait,Middle East and North Africa,0
+417,KGZ,Kyrgyz Republic,Europe and Central Asia,0
+418,LAO,Lao People's Democratic Republic,East Asia and Pacific,0
+422,LBN,Lebanon,Middle East and North Africa,4
+426,LSO,Lesotho,Sub-Saharan Africa,0
+428,LVA,Latvia,Europe and Central Asia,2
+430,LBR,Liberia,Sub-Saharan Africa,0
+434,LBY,Libya,Middle East and North Africa,0
+440,LTU,Lithuania,Europe and Central Asia,1
+442,LUX,Luxembourg,Europe and Central Asia,0
+446,MAC,Macao,East Asia and Pacific,0
+450,MDG,Madagascar,Sub-Saharan Africa,0
