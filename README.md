@@ -1,4 +1,4 @@
-# Replication scripts for the 2023 ADB Kazakhstan GVC Report
+# ADB Kazakhstan GVC report 2023 replication scripts
 
 This repository contains the scripts behind the charts in the 2023 Asian Development Bank (ADB) publication *Kazakhstan's Resource Economy: Diversification Through Global Value Chains*. Each chart is a triplet of files sharing a common filename: the chart itself, saved as a PDF in the folder [figures](figures); a csv file that depicts its underlying data, saved in [data/final](data/final); and an R script that produces the two, saved in [codes](codes).
 
@@ -18,7 +18,7 @@ In principle, everything needed to replicate a chart is found in its csv file, w
 
 ```bibtex
 @misc{ksreyes2023adbkazgvc,
-    title = {{Replication scripts for the 2023 ADB Kazakhstan GVC report}},
+    title = {{ADB Kazakhstan GVC report 2023 replication scripts}},
     author = {{Kenneth S. Reyes}},
     url = {https://github.com/ksreyes/adb-kaz-gvc},
     year = {2023},
