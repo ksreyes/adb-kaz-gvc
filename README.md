@@ -14,8 +14,6 @@ In principle, everything needed to replicate a chart is found in its csv file, w
 
 ## Gallery
 
-![](figures/2.1_growth.pdf)
-
 ## Citing
 
 ```bibtex
@@ -29,4 +27,4 @@ In principle, everything needed to replicate a chart is found in its csv file, w
 
 ## Disclaimer
 
-The contents of this repository are in no way endorsed by the Asian Development Bank or the authors of cited works. All errors are my own.
+The contents of this repository are intended as a personal project with no official affiliation with the Asian Development Bank or the ADB publication in question.
