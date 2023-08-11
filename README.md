@@ -14,7 +14,7 @@ In principle, everything needed to replicate a chart is found in its csv file, w
 
 ## Gallery
 
-![](/figures/2.1_growth.pdf)
+![](figures/2.1_growth.pdf)
 
 ## Citing
 
