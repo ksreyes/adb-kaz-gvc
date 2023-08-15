@@ -37,63 +37,21 @@ products <- here("..", "..", "MRIO Processing", "dicts", "sectors.xlsx") |>
       .default                      = "Others"
   ))
 
-groups <- tibble(
-  name = c(
-    "Food",
-    "blank1",
-    "Minerals: crude oil",
-    "Minerals: natural gas",
-    "Minerals: ores",
-    "Minerals: others",
-    "blank2",
-    "Chemicals",
-    "Metals: ferroalloys",
-    "Metals: copper",
-    "Metals: others",
-    "Others"
-  ),
-  labs = c(
-    "1    Food",
-    " ",
-    "     Minerals: crude oil",
-    "     Minerals: natural gas",
-    "     Minerals: ores",
-    "     Minerals: others",
-    " ",
-    "2    Chemicals",
-    "3    Metals: ferroalloys",
-    "4    Metals: copper",
-    "5    Metals: others",
-    "6    Others"
-  ),
-  color = c(
-    "#007DB7",
-    NA,
-    "#E9532B", 
-    "#F57F29", 
-    "#FDB415",
-    "#f2e600",
-    NA,
-    "#0099d8", 
-    "#0088c7", 
-    "#00A5D2", 
-    "#6dbce3", 
-    "#6DCFF6"
-  ),
-  color_key = c(
-    NA,
-    NA,
-    "#E9532B", 
-    "#F57F29", 
-    "#FDB415",
-    "#f2e600",
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    NA
-  ))
+groups <- tribble(
+  ~name,                    ~labs,                         ~color,     ~color_key,
+  "Food",                   "1    Food",                   "#007DB7",  NA,
+  "blank1",                 " ",                           NA,         NA,
+  "Minerals: crude oil",    "     Minerals: crude oil",    "#E9532B",  "#E9532B",
+  "Minerals: natural gas",  "     Minerals: natural gas",  "#F57F29",  "#F57F29",
+  "Minerals: ores",         "     Minerals: ores",         "#FDB415",  "#FDB415",
+  "Minerals: others",       "     Minerals: others",       "#F2E600",  "#F2E600",
+  "blank2",                 " ",                           NA,         NA,
+  "Chemicals",              "2    Chemicals",              "#0099D8",  NA,
+  "Metals: ferroalloys",    "3    Metals: ferroalloys",    "#0088C7",  NA,
+  "Metals: copper",         "4    Metals: copper",         "#00A5D2",  NA,
+  "Metals: others",         "5    Metals: others",         "#6DBCE3",  NA,
+  "Others",                 "6    Others",                 "#6DCFF6",  NA
+)
 
 # Data ------------------------------------------------------------
 
