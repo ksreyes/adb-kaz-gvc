@@ -95,18 +95,18 @@ plot2 <- ggplot(df) +
   scale_y_continuous(limits = c(6, 11), sec.axis = sec_axis(~., name = years[3])) + 
   colors + 
   theme(
-    plot.margin = margin(15, 2, 2, 8),
     axis.title.x = element_text(size = 9),
     axis.title.y.left = element_blank(),
     axis.title.y.right = element_text(size = 9),
-    axis.ticks = element_blank(),
     axis.text.x = element_text(size = 8),
     axis.text.y.left = element_blank(),
     axis.text.y.right = element_text(size = 8),
+    axis.ticks = element_blank(),
     legend.position = "none",
     panel.background = element_rect(fill = "gray95", color = NA),
+    panel.border = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.border = element_blank()
+    plot.margin = margin(15, 2, 2, 8)
   ) +
   
   # Add labels
@@ -124,12 +124,12 @@ legend <- get_legend(
       override.aes = list(size = c(rep(3, 5), 4), alpha = 1, shape = c(rep(16, 5), 18))
     )) + 
     theme(
-      legend.title = element_blank(),
       legend.key = element_blank(),
       legend.key.size = unit(.75, "lines"),
       legend.text = element_text(size = 9),
-      legend.box.margin = margin(-8, 0, 0, 0),
-      legend.position = "bottom"
+      legend.title = element_blank(),
+      legend.position = "bottom",
+      legend.box.margin = margin(t = -8)
   ))
 
 plot <- plot_grid(plot1, plot2, ncol = 2, align = "h")
