@@ -5,6 +5,8 @@ drafts
 figures/figure-drafts/
 codes/colors.R
 charts
+README.html
+*.zip
 
 # R
 .Rproj.user
