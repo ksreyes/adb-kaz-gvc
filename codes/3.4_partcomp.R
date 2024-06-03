@@ -14,23 +14,22 @@ filename <- "3.4_partcomp"
 years <- c(2000, 2010, 2022)
 
 select <- c(
-    "Kazakhstan", "Russian Federation", "Uzberkistan", "Kyrgyz Republic",
-    "Saudi Arabia", "Brunei Darussalam", "Turkey", "Mongolia", "Georgia"
-  )
+  "Kazakhstan", "Russian Federation", "Uzbekistan", "Kyrgyz Republic", 
+  "Saudi Arabia", "Brunei Darussalam", "Turkey", "Mongolia", "Georgia"
+)
 
 # Data --------------------------------------------------------------------
 
 countries <- here("..", "..", "MRIO Processing", "dicts", "countries.xlsx") |> 
   read_excel() |>
   filter(name %in% select) |>
-  mutate(s = mrio) |> 
-  add_row(s = 0, name = "World")
+  mutate(s = mrio)
 
-gvcp <- here("..", "..", "MRIO Processing", "data", "gvcp62.parquet") |> 
+gvcp <- here("..", "..", "MRIO Processing", "data", "gvcp-62.parquet") |> 
   read_parquet() |> 
   filter(t %in% years[1:2] & agg == 0) |> 
   bind_rows(
-    here("..", "..", "MRIO Processing", "data", "gvcp.parquet") |> 
+    here("..", "..", "MRIO Processing", "data", "gvcp-72.parquet") |> 
       read_parquet() |> 
       filter(t == years[3] & agg == 0)
   ) |> 
